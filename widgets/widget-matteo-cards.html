@@ -299,7 +299,8 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     renderDots();
 
     prev.disabled = i <= 0;
-    next.disabled = i >= maxSeen;
+    // Forward arrow mirrors Next: review earlier cards, unlock next, or complete.
+    next.disabled = finished ? i >= maxSeen : false;
 
     if (finished) {
       action.textContent = 'Completed';
@@ -314,22 +315,14 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     }
     syncHeight();
   }
-  img.addEventListener('load', function () {
-    if (!locking) syncHeight();
-  });
-  prev.addEventListener('click', function () {
-    if (i <= 0) return;
-    i -= 1;
-    render();
-  });
-  next.addEventListener('click', function () {
-    if (i >= maxSeen) return;
-    i += 1;
-    render();
-  });
-  action.addEventListener('click', function () {
-    if (finished) return;
-    // Reviewing earlier cards: Next mirrors the next arrow
+  function goNext() {
+    if (finished) {
+      if (i >= maxSeen) return;
+      i += 1;
+      render();
+      return;
+    }
+    // Reviewing earlier cards
     if (i < maxSeen) {
       i += 1;
       render();
@@ -346,7 +339,17 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     maxSeen = CARDS.length - 1;
     markComplete();
     render();
+  }
+  img.addEventListener('load', function () {
+    if (!locking) syncHeight();
   });
+  prev.addEventListener('click', function () {
+    if (i <= 0) return;
+    i -= 1;
+    render();
+  });
+  next.addEventListener('click', goNext);
+  action.addEventListener('click', goNext);
   render();
   lockLayout();
   var resizeTimer = null;
