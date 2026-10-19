@@ -79,25 +79,29 @@
   }
   .next.enabled { opacity: 1; pointer-events: auto; background: #1C3564; }
   .next.enabled:hover { background: #152A52; }
+  .next.completed {
+    opacity: .45; pointer-events: none; cursor: default;
+    background: #1C3564; color: #fff;
+  }
   .next:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
+  .foot-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 0; }
   /* Collapse until the set is finished — nav stays put; card grows only then */
   .done-panel {
     display: none; margin-top: 16px; flex: none;
   }
   .done-panel.show { display: block; }
   .done-msg {
-    margin: 0 0 14px; padding: 14px 16px; border-radius: 10px;
+    margin: 0; padding: 14px 16px; border-radius: 10px;
     background: #EEF3FB; color: #1C3564; font-size: 15px; line-height: 24px; font-weight: 700;
   }
-  .end-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
   .ghost {
     font: inherit; font-weight: 700; font-size: 15px; color: #1C3564;
-    background: transparent; border: 1.5px solid #1C3564; border-radius: 999px;
+    background: #fff; border: 1.5px solid #1C3564; border-radius: 999px;
     padding: 12px 22px; cursor: pointer;
   }
   .ghost:hover { background: #EEF3FB; }
   .ghost:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
-  .next.hidden { visibility: hidden; pointer-events: none; }
+  .ghost[hidden] { display: none !important; }
   @media (max-width: 720px) {
     .card { padding: 20px 16px 16px; }
     .prompt { font-size: 16px; line-height: 24px; }
@@ -111,19 +115,19 @@
       <div class="options" id="options" role="radiogroup" data-i18n-aria="common.answerChoicesAria" aria-label="Answer choices"></div>
       <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
       <div class="foot">
-        <div class="series" aria-live="polite" aria-atomic="true">
-          <span class="series-n" id="seriesN">1</span>
-          <div class="dots" id="dots" aria-hidden="true"></div>
-          <span class="series-total" id="seriesTotal">4</span>
+        <div class="foot-left">
+          <button type="button" class="ghost" id="retry" data-i18n="common.tryAgain" hidden>Try again</button>
+          <div class="series" aria-live="polite" aria-atomic="true">
+            <span class="series-n" id="seriesN">1</span>
+            <div class="dots" id="dots" aria-hidden="true"></div>
+            <span class="series-total" id="seriesTotal">4</span>
+          </div>
         </div>
         <button type="button" class="next" id="next" data-i18n="common.next" disabled>Next</button>
       </div>
     </div>
     <div class="done-panel" id="donePanel">
       <div class="done-msg" data-i18n="common.activityCompleteRevisit">Activity complete. You can revisit the questions anytime.</div>
-      <div class="end-row">
-        <button type="button" class="ghost" id="retry" data-i18n="common.tryAgain">Try again</button>
-      </div>
     </div>
   </div>
 <!--UAOA_I18N-->
@@ -239,6 +243,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   var i = 0;
   var answered = false;
   var wrongTimer = null;
+  var finished = false;
   var finishedOnce = false;
   var prompt = document.getElementById('prompt');
   var options = document.getElementById('options');
@@ -247,7 +252,6 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   var seriesTotal = document.getElementById('seriesTotal');
   var dots = document.getElementById('dots');
   var next = document.getElementById('next');
-  var quiz = document.getElementById('quiz');
   var donePanel = document.getElementById('donePanel');
   var retry = document.getElementById('retry');
   seriesTotal.textContent = String(QUESTIONS.length);
@@ -289,8 +293,26 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     } catch (__uaoaE2) {}}
 
   function setNextEnabled(on) {
+    if (finished) return;
     next.disabled = !on;
     next.classList.toggle('enabled', on);
+  }
+
+  function setFinishedChrome(on) {
+    finished = !!on;
+    retry.hidden = !on;
+    next.classList.remove('enabled');
+    if (on) {
+      next.textContent = t('common.completed', 'Completed');
+      next.classList.add('completed');
+      next.disabled = true;
+      donePanel.classList.add('show');
+    } else {
+      next.textContent = t('common.next', 'Next');
+      next.classList.remove('completed');
+      next.disabled = true;
+      donePanel.classList.remove('show');
+    }
   }
 
   var locking = false;
@@ -321,7 +343,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   function lockLayout() {
     // Never remeasure after the learner has answered — resize from feedback /
     // markComplete used to call render() and wipe Q4 (and the done state).
-    if (locking || answered || donePanel.classList.contains('show')) return;
+    if (locking || answered || finished) return;
     locking = true;
     var savedI = i;
     prompt.style.minHeight = '';
@@ -353,13 +375,11 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   function render() {
     var q = QUESTIONS[i];
     answered = false;
-    donePanel.classList.remove('show');
-    next.classList.remove('hidden');
+    setFinishedChrome(false);
     seriesN.textContent = String(i + 1);
     prompt.textContent = q.prompt;
     feedback.innerHTML = '';
     feedback.className = 'feedback';
-    next.textContent = t('common.next', 'Next');
     setNextEnabled(false);
     renderDots();
     fillOptions(q);
@@ -367,7 +387,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   }
 
   function pick(idx, btn) {
-    if (answered) return;
+    if (answered || finished) return;
     if (wrongTimer) { clearTimeout(wrongTimer); wrongTimer = null; }
     var q = QUESTIONS[i];
     var nodes = options.querySelectorAll('.opt');
@@ -405,10 +425,8 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   }
 
   function showDone() {
-    // Keep the last answered question open; swap Next for Try again
-    next.classList.add('hidden');
-    setNextEnabled(false);
-    donePanel.classList.add('show');
+    // Keep the last answered question open; left Try again + inactive Completed
+    setFinishedChrome(true);
     if (!finishedOnce) {
       finishedOnce = true;
       markComplete();
@@ -417,7 +435,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   }
 
   next.addEventListener('click', function () {
-    if (!answered) return;
+    if (finished || !answered) return;
     if (i < QUESTIONS.length - 1) {
       i += 1;
       render();
@@ -427,6 +445,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   });
 
   retry.addEventListener('click', function () {
+    if (wrongTimer) { clearTimeout(wrongTimer); wrongTimer = null; }
     i = 0;
     render();
   });
