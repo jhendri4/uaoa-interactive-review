@@ -77,6 +77,10 @@
   }
   .tool-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
   .tool h2 { margin: 0; font-size: 18px; color: var(--navy); }
+  .tool-num {
+    display: inline-block; min-width: 2.4em; margin-right: 6px;
+    font-variant-numeric: tabular-nums; font-weight: 800; color: var(--purple);
+  }
   .badge {
     font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
     color: var(--teal); background: rgba(33,183,203,.12); border-radius: 999px; padding: 6px 10px;
@@ -196,9 +200,14 @@
     var section = document.createElement('section');
     section.className = 'module' + (mi === startIndex ? ' on' : '');
     section.id = 'mod-' + mod.id;
-    mod.tools.forEach(function (tool) {
+    // Reviewer IDs: 1.1 / 1.2… for modules; B.1 for Buttons; S.1 for Summary
+    var modNum = ({ buttons: 'B', m1: '1', m2: '2', m3: '3', m4: '4', m5: '5', summary: 'S' })[mod.id] || String(mi);
+    mod.tools.forEach(function (tool, ti) {
       var art = document.createElement('article');
       art.className = 'tool';
+      var ref = modNum + '.' + (ti + 1);
+      art.id = 'tool-' + mod.id + '-' + (ti + 1);
+      art.dataset.ref = ref;
       var badgeClass = tool.kind === 'native-recreation' ? 'badge native' : 'badge';
       var badgeLabel = tool.kind === 'native-recreation' ? 'Recreated native' : (tool.kind === 'custom' ? 'Custom widget' : 'Demo');
       art.innerHTML =
@@ -209,10 +218,14 @@
           '<div class="tool-progress-bar" hidden aria-hidden="true"><i></i></div>' +
         '</div>' +
         '<div class="tool-frame"><iframe title="" loading="lazy"></iframe></div>';
-      art.querySelector('h2').textContent = tool.name;
+      var h2 = art.querySelector('h2');
+      h2.innerHTML = '<span class="tool-num"></span>';
+      h2.querySelector('.tool-num').textContent = ref;
+      h2.appendChild(document.createTextNode(tool.name));
       art.querySelector('.badge').textContent = badgeLabel;
       art.querySelector('.note').textContent = tool.note || '';
       var iframe = art.querySelector('iframe');
+      iframe.title = ref + ' ' + tool.name;
       // Cache-bust so local previews don't stick on stale iframe widgets (304)
       iframe.src = tool.src + (tool.src.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
       iframe.style.height = (tool.height || 420) + 'px';
