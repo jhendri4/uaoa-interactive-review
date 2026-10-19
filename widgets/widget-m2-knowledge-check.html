@@ -84,7 +84,7 @@
     background: #1C3564; color: #fff;
   }
   .next:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
-  .foot-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 0; }
+  .foot-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-left: auto; }
   /* Collapse until the set is finished — nav stays put; card grows only then */
   .done-panel {
     display: none; margin-top: 16px; flex: none;
@@ -115,15 +115,15 @@
       <div class="options" id="options" role="radiogroup" data-i18n-aria="common.answerChoicesAria" aria-label="Answer choices"></div>
       <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
       <div class="foot">
-        <div class="foot-left">
-          <button type="button" class="ghost" id="retry" data-i18n="common.tryAgain" hidden>Try again</button>
-          <div class="series" aria-live="polite" aria-atomic="true">
-            <span class="series-n" id="seriesN">1</span>
-            <div class="dots" id="dots" aria-hidden="true"></div>
-            <span class="series-total" id="seriesTotal">4</span>
-          </div>
+        <div class="series" aria-live="polite" aria-atomic="true">
+          <span class="series-n" id="seriesN">1</span>
+          <div class="dots" id="dots" aria-hidden="true"></div>
+          <span class="series-total" id="seriesTotal">4</span>
         </div>
-        <button type="button" class="next" id="next" data-i18n="common.next" disabled>Next</button>
+        <div class="foot-actions">
+          <button type="button" class="ghost" id="retry" data-i18n="common.tryAgain" hidden>Try again</button>
+          <button type="button" class="next" id="next" data-i18n="common.next" disabled>Next</button>
+        </div>
       </div>
     </div>
     <div class="done-panel" id="donePanel">

@@ -83,7 +83,7 @@
   .opt.selected .radio, .opt.correct .radio { border-color:#1C3564; background:#1C3564; box-shadow: inset 0 0 0 3px #fff; }
   .opt.correct .radio { border-color:#21B7CB; background:#21B7CB; }
   .series { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; color:#1C3564; font-variant-numeric:tabular-nums; }
-  .foot-left { display:flex; align-items:center; gap:12px; flex-wrap:wrap; min-width:0; }
+  .foot-actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-left:auto; }
 </style></head><body>
 <div class="card">
   <div id="quiz">
@@ -91,15 +91,15 @@
     <div id="options"></div>
     <div class="feedback" id="feedback" role="status"></div>
     <div class="foot">
-      <div class="foot-left">
-        <button type="button" class="btn btn-ghost" id="retry" data-i18n="common.tryAgain" hidden>Try again</button>
-        <div class="series" aria-live="polite" aria-atomic="true">
-          <span class="series-n" id="seriesN">1</span>
-          <div class="dots" id="dots"></div>
-          <span class="series-total" id="seriesTotal">3</span>
-        </div>
+      <div class="series" aria-live="polite" aria-atomic="true">
+        <span class="series-n" id="seriesN">1</span>
+        <div class="dots" id="dots"></div>
+        <span class="series-total" id="seriesTotal">3</span>
       </div>
-      <button type="button" class="btn next" id="next" data-i18n="common.next" disabled>Next</button>
+      <div class="foot-actions">
+        <button type="button" class="btn btn-ghost" id="retry" data-i18n="common.tryAgain" hidden>Try again</button>
+        <button type="button" class="btn next" id="next" data-i18n="common.next" disabled>Next</button>
+      </div>
     </div>
     <div class="done-banner" id="done" data-i18n="common.activityComplete">Activity complete</div>
   </div>
