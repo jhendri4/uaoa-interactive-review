@@ -37,9 +37,11 @@
   .btn-primary:hover { background: #152A52; }
   .btn-primary:disabled { opacity: .4; cursor: default; pointer-events: none; }
   .btn-ghost {
-    background: transparent; color: #1C3564;
+    background: #fff; color: #1C3564;
     border: 1.5px solid #1C3564;
   }
+  .btn-ghost:hover { background: #EEF3FB; }
+  .btn-ghost[hidden] { display: none !important; }
   .opt {
     display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: left;
     font: inherit; cursor: pointer; border: 1.5px solid #D1D5DB; border-radius: 12px;
@@ -67,14 +69,21 @@
   #quiz { display:flex; flex-direction:column; flex:1 1 auto; }
   .next { background: #8B9BB8; color:#fff; opacity:.45; pointer-events:none; }
   .next.enabled { opacity:1; pointer-events:auto; background:#1C3564; }
-  .done-panel { display:none; margin-top:16px; flex:none; }
-  .done-panel.show { display:block; }
-  .done-msg { margin:0 0 12px; padding:12px 14px; border-radius:10px; background:#EEF3FB; font-weight:700; color:#1C3564; }
-  .next.hidden { visibility:hidden; pointer-events:none; }
+  .next.completed {
+    opacity: .45; pointer-events: none; cursor: default;
+    background: #1C3564; color: #fff;
+  }
+  .done-banner {
+    margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+    background: #EEF3FB; font-weight: 700; color: #1C3564; font-size: 14px;
+    opacity: 0; pointer-events: none; flex: none;
+  }
+  .done-banner.show { opacity: 1; }
   .radio { flex:none; width:18px; height:18px; margin-top:2px; border-radius:999px; border:1.5px solid #9AA3B5; }
   .opt.selected .radio, .opt.correct .radio { border-color:#1C3564; background:#1C3564; box-shadow: inset 0 0 0 3px #fff; }
   .opt.correct .radio { border-color:#21B7CB; background:#21B7CB; }
   .series { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:800; color:#1C3564; font-variant-numeric:tabular-nums; }
+  .foot-left { display:flex; align-items:center; gap:12px; flex-wrap:wrap; min-width:0; }
 </style></head><body>
 <div class="card">
   <div id="quiz">
@@ -82,17 +91,17 @@
     <div id="options"></div>
     <div class="feedback" id="feedback" role="status"></div>
     <div class="foot">
-      <div class="series" aria-live="polite" aria-atomic="true">
-        <span class="series-n" id="seriesN">1</span>
-        <div class="dots" id="dots"></div>
-        <span class="series-total" id="seriesTotal">3</span>
+      <div class="foot-left">
+        <button type="button" class="btn btn-ghost" id="retry" data-i18n="common.tryAgain" hidden>Try again</button>
+        <div class="series" aria-live="polite" aria-atomic="true">
+          <span class="series-n" id="seriesN">1</span>
+          <div class="dots" id="dots"></div>
+          <span class="series-total" id="seriesTotal">3</span>
+        </div>
       </div>
       <button type="button" class="btn next" id="next" data-i18n="common.next" disabled>Next</button>
     </div>
-  </div>
-  <div class="done-panel" id="done">
-    <div class="done-msg" data-i18n="common.activityCompleteRevisit">Activity complete. You can revisit the questions anytime.</div>
-    <div class="foot" style="justify-content:flex-end;margin-top:0"><button type="button" class="btn btn-ghost" id="retry" data-i18n="common.tryAgain">Try again</button></div>
+    <div class="done-banner" id="done" data-i18n="common.activityComplete">Activity complete</div>
   </div>
 </div>
 <!--UAOA_I18N-->
@@ -216,13 +225,36 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     for (var c = 0; c < m.choiceCount; c++) choices.push(t(base + '.choices.c' + c));
     return { prompt: t(base + '.prompt'), choices: choices, answer: m.answer, ok: t(base + '.ok') };
   });
-  var i=0, answered=false, locking=false, wrongTimer=null;
+  var i=0, answered=false, locking=false, wrongTimer=null, finished=false, finishedOnce=false;
   var BAD=t('m3.trueFalse.bad', '<strong>Not quite. Review the statement and try again.</strong>');
   var prompt=document.getElementById('prompt');
   var options=document.getElementById('options'), feedback=document.getElementById('feedback');
   var seriesN=document.getElementById('seriesN');
-  var dots=document.getElementById('dots'), next=document.getElementById('next'), done=document.getElementById('done');
-  function enable(on){ next.disabled=!on; next.classList.toggle('enabled',on); }
+  var dots=document.getElementById('dots'), next=document.getElementById('next');
+  var done=document.getElementById('done'), retry=document.getElementById('retry');
+  document.getElementById('seriesTotal').textContent=String(Q.length);
+
+  function enable(on){
+    if (finished) return;
+    next.disabled=!on;
+    next.classList.toggle('enabled',on);
+  }
+  function setFinishedChrome(on){
+    finished = !!on;
+    retry.hidden = !on;
+    next.classList.remove('enabled');
+    if (on) {
+      next.textContent = t('common.completed', 'Completed');
+      next.classList.add('completed');
+      next.disabled = true;
+      done.classList.add('show');
+    } else {
+      next.textContent = t('common.next', 'Next');
+      next.classList.remove('completed');
+      next.disabled = true;
+      done.classList.remove('show');
+    }
+  }
   function renderDots(){ dots.innerHTML=''; Q.forEach(function(_,idx){ var d=document.createElement('span'); d.className='dot'+(idx===i?' on':(idx<i?' seen':'')); dots.appendChild(d); }); }
   function fillOptions(q){
     options.innerHTML='';
@@ -233,7 +265,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     });
   }
   function lockLayout(){
-    if(locking || answered || done.classList.contains('show')) return;
+    if(locking || answered || finished) return;
     locking=true; var saved=i;
     prompt.style.minHeight=''; options.style.minHeight=''; feedback.style.minHeight='';
     var maxP=0,maxO=0,maxF=0;
@@ -251,17 +283,18 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     i=saved; locking=false; render();
   }
   function render(){
-    var q=Q[i]; answered=false; done.classList.remove('show'); next.classList.remove('hidden');
+    var q=Q[i]; answered=false;
+    setFinishedChrome(false);
     seriesN.textContent=String(i+1); prompt.textContent=q.prompt;
     feedback.className='feedback'; feedback.innerHTML='';
-    next.textContent=t('common.next','Next'); enable(false); renderDots(); fillOptions(q);
+    enable(false); renderDots(); fillOptions(q);
   }
   function pick(idx,btn){
-    if(answered) return;
+    if(answered || finished) return;
     if(wrongTimer){ clearTimeout(wrongTimer); wrongTimer=null; }
     var q=Q[i], nodes=options.querySelectorAll('.opt');
     nodes.forEach(function(el){ el.classList.remove('selected','correct','wrong'); });
-    if(!answered){ feedback.className='feedback'; feedback.innerHTML=''; }
+    feedback.className='feedback'; feedback.innerHTML='';
     btn.classList.add('selected');
     if(idx===q.answer){
       answered=true; btn.classList.remove('selected'); btn.classList.add('correct');
@@ -276,11 +309,18 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     }
   }
   next.onclick=function(){
-    if(!answered) return;
+    if(finished || !answered) return;
     if(i<Q.length-1){ i++; render(); }
-    else { next.classList.add('hidden'); done.classList.add('show'); markComplete(); }
+    else {
+      setFinishedChrome(true);
+      if(!finishedOnce){ finishedOnce=true; markComplete(); }
+    }
   };
-  document.getElementById('retry').onclick=function(){ i=0; render(); };
+  retry.onclick=function(){
+    if(wrongTimer){ clearTimeout(wrongTimer); wrongTimer=null; }
+    i=0;
+    render();
+  };
   render(); lockLayout();
   var rt=null; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(lockLayout,120); });
   window.addEventListener('load', lockLayout);

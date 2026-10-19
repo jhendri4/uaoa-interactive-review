@@ -46,20 +46,22 @@
     border: 1.5px solid #D1D5DB; border-radius: 12px;
     padding: 10px 10px 10px 14px; background: #fff;
     cursor: grab; touch-action: none; user-select: none;
-    transition: transform .18s ease, box-shadow .18s ease, border-color .15s, background .15s;
-    will-change: transform;
+    transition: border-color .15s, background .15s, box-shadow .15s;
   }
   .row:active { cursor: grabbing; }
   .row.locked { cursor: default; touch-action: auto; }
-  .row.dragging {
-    opacity: .55;
-    border-color: #7C5297;
-    box-shadow: 0 8px 20px rgba(28,53,100,.16);
-    z-index: 2;
-    transition: none;
+  .row.placeholder {
+    opacity: 0;
+    pointer-events: none;
+    border-style: dashed;
   }
-  .row.shift-up { transform: translateY(calc(-100% - 10px)); }
-  .row.shift-down { transform: translateY(calc(100% + 10px)); }
+  .row.ghost {
+    position: fixed; left: 0; top: 0; z-index: 40;
+    margin: 0; pointer-events: none; cursor: grabbing;
+    box-shadow: 0 12px 28px rgba(28,53,100,.22);
+    border-color: #7C5297; background: #fff;
+    opacity: .96;
+  }
   .num {
     flex: none; width: 28px; height: 28px; border-radius: 999px;
     background: #EEF3FB; color: #1C3564; font-weight: 800; font-size: 13px;
@@ -213,7 +215,7 @@ function markComplete() {
   var feedback = document.getElementById('feedback');
   var submit = document.getElementById('submit');
   var locked = false;
-  var drag = null; // { from, pointerId, startY, currentTo }
+  var drag = null;
 
   var CHEV_UP = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>';
   var CHEV_DOWN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
@@ -225,66 +227,23 @@ function markComplete() {
     paint();
   }
 
-  function rows() {
-    return Array.prototype.slice.call(list.querySelectorAll('.row'));
+  function syncHeight() {
+    try {
+      var f = window.frameElement;
+      if (f) f.style.height = Math.ceil(document.documentElement.scrollHeight) + 'px';
+    } catch (e) {}
   }
 
-  function updateNums() {
-    rows().forEach(function (row, i) {
-      var num = row.querySelector('.num');
-      if (num) num.textContent = String(i + 1);
-      var up = row.querySelector('.move-up');
-      var down = row.querySelector('.move-down');
-      if (up) up.disabled = locked || i === 0;
-      if (down) down.disabled = locked || i === order.length - 1;
-    });
-  }
-
-  function clearShifts() {
-    rows().forEach(function (row) {
-      row.classList.remove('shift-up', 'shift-down');
-    });
-  }
-
-  /** While dragging, preview how neighbours will slide to make room. */
-  function previewShifts(from, to) {
-    clearShifts();
-    if (from === to) return;
-    rows().forEach(function (row, i) {
-      if (i === from) return;
-      if (from < to && i > from && i <= to) row.classList.add('shift-up');
-      if (from > to && i >= to && i < from) row.classList.add('shift-down');
-    });
-  }
-
-  function indexFromPointerY(clientY) {
-    var els = rows();
-    if (!els.length) return 0;
-    for (var i = 0; i < els.length; i++) {
-      var r = els[i].getBoundingClientRect();
-      var mid = r.top + r.height / 2;
-      if (clientY < mid) return i;
-    }
-    return els.length - 1;
-  }
-
-  function commitDrag(from, to) {
-    clearShifts();
-    if (from === to) {
-      paint();
-      return;
-    }
-    var moved = order.splice(from, 1)[0];
-    order.splice(to, 0, moved);
-    paint();
-  }
-
-  function paint() {
+  function paint(opts) {
+    opts = opts || {};
+    var placeholderText = opts.placeholderText || null;
     list.innerHTML = '';
     order.forEach(function (text, idx) {
       var row = document.createElement('div');
-      row.className = 'row' + (locked ? ' locked correct' : '');
+      var isPlaceholder = placeholderText != null && text === placeholderText;
+      row.className = 'row' + (locked ? ' locked correct' : '') + (isPlaceholder ? ' placeholder' : '');
       row.dataset.index = String(idx);
+      row.dataset.text = text;
 
       var num = document.createElement('span');
       num.className = 'num';
@@ -302,7 +261,7 @@ function markComplete() {
       up.className = 'move move-up';
       up.setAttribute('aria-label', t('m3.sorting.ui.moveUp', 'Move up'));
       up.innerHTML = CHEV_UP;
-      up.disabled = locked || idx === 0;
+      up.disabled = locked || idx === 0 || !!placeholderText;
       up.addEventListener('click', function (e) {
         e.stopPropagation();
         moveItem(idx, idx - 1);
@@ -313,7 +272,7 @@ function markComplete() {
       down.className = 'move move-down';
       down.setAttribute('aria-label', t('m3.sorting.ui.moveDown', 'Move down'));
       down.innerHTML = CHEV_DOWN;
-      down.disabled = locked || idx === order.length - 1;
+      down.disabled = locked || idx === order.length - 1 || !!placeholderText;
       down.addEventListener('click', function (e) {
         e.stopPropagation();
         moveItem(idx, idx + 1);
@@ -322,11 +281,11 @@ function markComplete() {
       moves.appendChild(up);
       moves.appendChild(down);
 
-      if (!locked) {
+      if (!locked && !placeholderText) {
         row.addEventListener('pointerdown', function (e) {
           if (e.button !== 0) return;
           if (e.target.closest('.move')) return;
-          startDrag(row, idx, e);
+          startDrag(row, text, e);
         });
       }
 
@@ -337,47 +296,81 @@ function markComplete() {
     });
   }
 
-  function startDrag(row, from, e) {
-    if (drag) return;
+  /** Slot mid-Y for each list index, from current (non-ghost) layout. */
+  function slotMids() {
+    var mids = [];
+    Array.prototype.forEach.call(list.querySelectorAll('.row'), function (row) {
+      var r = row.getBoundingClientRect();
+      mids.push(r.top + r.height / 2);
+    });
+    return mids;
+  }
+
+  function indexFromY(clientY, mids) {
+    if (!mids.length) return 0;
+    for (var i = 0; i < mids.length; i++) {
+      if (clientY < mids[i]) return i;
+    }
+    return mids.length - 1;
+  }
+
+  function placeGhost(ghost, clientX, clientY, offsetX, offsetY, width) {
+    ghost.style.width = width + 'px';
+    ghost.style.transform = 'translate(' + (clientX - offsetX) + 'px,' + (clientY - offsetY) + 'px)';
+  }
+
+  function startDrag(row, text, e) {
+    if (drag || locked) return;
+
+    var rect = row.getBoundingClientRect();
+    var ghost = row.cloneNode(true);
+    ghost.classList.add('ghost');
+    ghost.classList.remove('placeholder');
+    document.body.appendChild(ghost);
+
     drag = {
-      from: from,
-      to: from,
+      text: text,
       pointerId: e.pointerId,
-      startY: e.clientY,
-      row: row,
-      originTop: row.getBoundingClientRect().top
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+      width: rect.width,
+      ghost: ghost
     };
-    row.classList.add('dragging');
-    try { row.setPointerCapture(e.pointerId); } catch (err) {}
+
+    // Leave a hole in the list at the item's current index.
+    paint({ placeholderText: text });
+    placeGhost(ghost, e.clientX, e.clientY, drag.offsetX, drag.offsetY, drag.width);
+    e.preventDefault();
+
+    // Listen on document — the source row is replaced by the placeholder on paint().
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onUp);
 
     function onMove(ev) {
       if (!drag || ev.pointerId !== drag.pointerId) return;
-      var dy = ev.clientY - drag.startY;
-      row.style.transform = 'translateY(' + dy + 'px)';
-      var to = indexFromPointerY(ev.clientY);
-      if (to !== drag.to) {
-        drag.to = to;
-        previewShifts(drag.from, to);
-      }
+      placeGhost(drag.ghost, ev.clientX, ev.clientY, drag.offsetX, drag.offsetY, drag.width);
+
+      var from = order.indexOf(drag.text);
+      if (from < 0) return;
+      var to = indexFromY(ev.clientY, slotMids());
+      if (to === from) return;
+
+      order.splice(from, 1);
+      order.splice(to, 0, drag.text);
+      paint({ placeholderText: drag.text });
     }
 
     function onUp(ev) {
       if (!drag || ev.pointerId !== drag.pointerId) return;
-      row.releasePointerCapture(ev.pointerId);
-      row.removeEventListener('pointermove', onMove);
-      row.removeEventListener('pointerup', onUp);
-      row.removeEventListener('pointercancel', onUp);
-      var from = drag.from;
-      var to = drag.to;
-      row.style.transform = '';
-      row.classList.remove('dragging');
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
+      if (drag.ghost && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
       drag = null;
-      commitDrag(from, to);
+      paint();
+      syncHeight();
     }
-
-    row.addEventListener('pointermove', onMove);
-    row.addEventListener('pointerup', onUp);
-    row.addEventListener('pointercancel', onUp);
   }
 
   function lockFeedback() {
@@ -391,13 +384,6 @@ function markComplete() {
     feedback.style.minHeight = Math.ceil(h) + 'px';
     feedback.className = 'feedback';
     feedback.innerHTML = '';
-  }
-
-  function syncHeight() {
-    try {
-      var f = window.frameElement;
-      if (f) f.style.height = Math.ceil(document.documentElement.scrollHeight) + 'px';
-    } catch (e) {}
   }
 
   submit.addEventListener('click', function () {
