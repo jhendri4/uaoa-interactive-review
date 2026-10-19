@@ -56,15 +56,18 @@
   .done-banner.show { opacity: 1; }
 
   .layer-view[hidden], .home-view[hidden] { display: none !important; }
-  .layer-view {
-    display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  .eyebrow {
+    margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .06em;
+    text-transform: uppercase; color: #21b7cb;
   }
   .layer-title {
     margin: 0 0 14px; font-size: 22px; line-height: 28px; font-weight: 800; color: #1C3564;
   }
   .stage {
     background: #F7F8FA; border-radius: 12px; padding: 18px;
-    flex: none;
+  }
+  .step-title {
+    margin: 0 0 10px; font-size: 16px; line-height: 24px; font-weight: 800; color: #1C3564;
   }
   .stage p, .stage li { font-size: 15px; line-height: 24px; color: #091324; }
   .stage p { margin: 0 0 10px; }
@@ -74,9 +77,22 @@
   .stage summary { cursor: pointer; font-weight: 800; color: #1C3564; }
   .stage strong { color: #1C3564; font-weight: 800; }
 
+  .pill-row {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px;
+  }
+  .pill {
+    font: inherit; font-weight: 700; font-size: 13px;
+    color: #1C3564; background: #fff; border: 1.5px solid #D1D5DB;
+    border-radius: 999px; padding: 8px 12px; cursor: pointer;
+  }
+  .pill:hover { border-color: #21b7cb; }
+  .pill:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
+  .pill.is-on { border-color: #1C3564; background: #1C3564; color: #fff; }
+  .pill.is-seen:not(.is-on) { border-color: #C9B6D9; background: #F3ECF7; }
+
   .foot {
     display: flex; justify-content: space-between; gap: 12px; align-items: center;
-    flex-wrap: wrap; margin-top: 14px; flex: none;
+    flex-wrap: wrap; margin-top: 14px;
   }
   .series {
     display: flex; align-items: center; gap: 10px;
@@ -113,7 +129,9 @@
   </div>
 
   <div class="layer-view" id="layerView" hidden>
-    <h2 class="layer-title" id="layerTitle" aria-live="polite"></h2>
+    <p class="eyebrow" id="layerEyebrow"></p>
+    <h2 class="layer-title" id="layerTitle"></h2>
+    <div class="pill-row" id="pillRow" role="tablist"></div>
     <div class="stage" id="stage"></div>
     <div class="foot">
       <div class="series" aria-live="polite" aria-atomic="true">
@@ -267,6 +285,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       id: id,
       num: t(base + '.num', id.slice(1)),
       title: t(base + '.title', id),
+      eyebrow: t(base + '.eyebrow', ''),
       labels: labels.filter(Boolean),
       intro: t(base + '.intro', ''),
       steps: loadSteps(flowKey, stepIds)
@@ -283,7 +302,9 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   var layerView = document.getElementById('layerView');
   var tracksEl = document.getElementById('tracks');
   var doneBanner = document.getElementById('doneBanner');
+  var layerEyebrow = document.getElementById('layerEyebrow');
   var layerTitle = document.getElementById('layerTitle');
+  var pillRow = document.getElementById('pillRow');
   var stage = document.getElementById('stage');
   var seriesN = document.getElementById('seriesN');
   var seriesTotal = document.getElementById('seriesTotal');
@@ -293,19 +314,12 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
 
   var activeLayer = -1;
   var stepIndex = 0; // 0 = intro, 1..n = steps
-  var seenSteps = {};
+  var seenSteps = {}; // layerId -> { stepKey: true }
   var finishedOnce = false;
   var trackButtons = [];
-  var stageMinByLayer = {};
-  var locking = false;
 
   function screenCount(layer) {
-    return 1 + layer.steps.length;
-  }
-
-  function screenLabel(layer) {
-    if (stepIndex === 0) return t('m5.layers.ui.overview', 'Overview');
-    return layer.steps[stepIndex - 1].title;
+    return 1 + layer.steps.length; // intro + steps
   }
 
   function ensureSeen(layerId) {
@@ -346,42 +360,37 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     activeLayer = -1;
     homeView.hidden = false;
     layerView.hidden = true;
-    stage.style.minHeight = '';
     paintHome();
   }
 
-  function fillStage(layer, idx) {
-    if (idx === 0) {
+  function renderStage(layer) {
+    if (stepIndex === 0) {
       stage.innerHTML = '<div class="body">' + layer.intro + '</div>';
     } else {
-      stage.innerHTML = '<div class="body">' + layer.steps[idx - 1].body + '</div>';
+      var step = layer.steps[stepIndex - 1];
+      stage.innerHTML =
+        '<h3 class="step-title"></h3><div class="body"></div>';
+      stage.querySelector('.step-title').textContent = step.title;
+      stage.querySelector('.body').innerHTML = step.body;
     }
   }
 
-  function lockStageHeight(layer) {
-    if (locking) return;
-    locking = true;
-    var saved = stepIndex;
-    stage.style.minHeight = '';
-    var maxH = 0;
+  function renderPills(layer) {
+    pillRow.innerHTML = '';
     var total = screenCount(layer);
+    var seen = ensureSeen(layer.id);
     for (var i = 0; i < total; i++) {
-      fillStage(layer, i);
-      Array.prototype.forEach.call(stage.querySelectorAll('details'), function (d) {
-        d.open = true;
-      });
-      maxH = Math.max(maxH, stage.getBoundingClientRect().height);
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pill' + (i === stepIndex ? ' is-on' : '') + (seen[String(i)] && i !== stepIndex ? ' is-seen' : '');
+      b.textContent = i === 0 ? t('m5.layers.ui.overview', 'Overview') : layer.steps[i - 1].title;
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', i === stepIndex ? 'true' : 'false');
+      (function (idx) {
+        b.addEventListener('click', function () { goToScreen(idx); });
+      })(i);
+      pillRow.appendChild(b);
     }
-    stageMinByLayer[layer.id] = Math.ceil(maxH);
-    stage.style.minHeight = stageMinByLayer[layer.id] + 'px';
-    stepIndex = saved;
-    fillStage(layer, stepIndex);
-    locking = false;
-  }
-
-  function applyLockedHeight(layer) {
-    var h = stageMinByLayer[layer.id];
-    if (h) stage.style.minHeight = h + 'px';
   }
 
   function renderDots(layer) {
@@ -400,17 +409,20 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     var total = screenCount(layer);
     var last = stepIndex >= total - 1;
     prevBtn.disabled = stepIndex === 0;
-    nextBtn.textContent = last
-      ? t('m5.layers.ui.backToLayers', 'Back to layers')
-      : t('common.next', 'Next');
+    if (last) {
+      nextBtn.textContent = t('m5.layers.ui.backToLayers', 'Back to layers');
+    } else {
+      nextBtn.textContent = t('common.next', 'Next');
+    }
   }
 
   function paintLayer() {
     var layer = LAYERS[activeLayer];
     markScreenSeen(layer.id, stepIndex);
-    layerTitle.textContent = layer.title + ': ' + screenLabel(layer);
-    fillStage(layer, stepIndex);
-    applyLockedHeight(layer);
+    layerEyebrow.textContent = layer.eyebrow;
+    layerTitle.textContent = layer.title;
+    renderPills(layer);
+    renderStage(layer);
     renderDots(layer);
     updateNav(layer);
     syncHeight();
@@ -421,7 +433,6 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     stepIndex = 0;
     homeView.hidden = true;
     layerView.hidden = false;
-    lockStageHeight(LAYERS[i]);
     paintLayer();
   }
 
@@ -466,32 +477,13 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   });
 
   stage.addEventListener('toggle', function (ev) {
-    if (ev.target && ev.target.tagName === 'DETAILS' && activeLayer >= 0) {
-      setTimeout(function () {
-        var layer = LAYERS[activeLayer];
-        var h = Math.ceil(stage.getBoundingClientRect().height);
-        if (!stageMinByLayer[layer.id] || h > stageMinByLayer[layer.id]) {
-          stageMinByLayer[layer.id] = h;
-          stage.style.minHeight = h + 'px';
-        }
-        syncHeight();
-      }, 30);
+    if (ev.target && ev.target.tagName === 'DETAILS') {
+      setTimeout(syncHeight, 30);
     }
   }, true);
 
   showHome();
-  var rt = null;
-  window.addEventListener('resize', function () {
-    clearTimeout(rt);
-    rt = setTimeout(function () {
-      if (activeLayer >= 0) {
-        lockStageHeight(LAYERS[activeLayer]);
-        paintLayer();
-      } else {
-        syncHeight();
-      }
-    }, 120);
-  });
+  window.addEventListener('resize', function () { syncHeight(); });
   window.addEventListener('load', syncHeight);
   if (window.ResizeObserver) new ResizeObserver(syncHeight).observe(document.body);
 })();
