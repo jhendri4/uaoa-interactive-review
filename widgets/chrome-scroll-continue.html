@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Continue (scroll pin)</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #F4F6FA; }
+  body {
+    font-family: 'Cerebri Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: #091324; padding: 16px 12px 40px;
+  }
+  .block {
+    background: #fff; border: 1px solid #E5E7EB; border-radius: 12px;
+    padding: 16px 18px; margin: 0 0 12px; font-size: 15px; line-height: 24px;
+  }
+  .block h2 { margin: 0 0 8px; font-size: 17px; color: #1C3564; }
+  .block p { margin: 0; color: #5A6A85; }
+  iframe.break {
+    width: 100%; height: 88px; border: 0; display: block; background: transparent;
+  }
+</style>
+</head>
+<body>
+  <div class="block">
+    <h2>Content above the Continue break</h2>
+    <p>In the course, Custom JS pins this break near the bottom of the viewport. Click Continue to unveil the next segment.</p>
+  </div>
+  <iframe class="break" src="chrome-scroll-fade-embed.html" title="Continue button"></iframe>
+  <div class="block">
+    <h2>Revealed content</h2>
+    <p>This block is veiled until Continue is pressed — same pattern as ScormStack scroll-fade embeds.</p>
+  </div>
+  <div class="block">
+    <h2>More revealed content</h2>
+    <p>Additional siblings stay veiled with the same Continue instance until unlocked.</p>
+  </div>
+</body>
+</html>

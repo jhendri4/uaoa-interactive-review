@@ -1,0 +1,722 @@
+{
+  "m1_forms": [
+    {
+      "front": "Offensive speechSelect to reveal",
+      "back": "Offensive speechLanguage targeting someone's identity, appearance, or performance with the intention of humiliating, insulting, or degrading them."
+    },
+    {
+      "front": "Digital hostilitySelect to reveal",
+      "back": "Digital hostilityHarmful behavior directed at a person or group through repeated or coordinated negative online interactions, such as mass reporting or collective harassment."
+    },
+    {
+      "front": "Hate speechSelect to reveal",
+      "back": "Hate speechHostile or malicious language targeting someone because of a protected characteristic, including race, religion, gender, sexual orientation, or disability."
+    }
+  ],
+  "m2_affected": [
+    {
+      "front": "AthletesSelect to reveal",
+      "back": "AthletesHigh public visibility can make athletes frequent targets of online abuse. Abuse may follow a loss, a mistake, a performance, or a personal decision, and harmful content can quickly spread across digital platforms."
+    },
+    {
+      "front": "Match officialsSelect to reveal",
+      "back": "Match officialsOfficials can face online abuse following decisions made during competition, adding to the verbal and physical abuse they may already experience in person. Repeated criticism, threats, and hostility can contribute to stress and affect their confidence, perceived authority, and wellbeing."
+    },
+    {
+      "front": "JournalistsSelect to reveal",
+      "back": "JournalistsJournalists play an important role in connecting athletes, teams, and sporting organisations with wider audiences. Coverage perceived as critical or negative can lead to online hostility from fans, athletes, teams, and others engaging with their work."
+    },
+    {
+      "front": "Sponsors and representativesSelect to reveal",
+      "back": "Sponsors and representativesSporting organisations and the people who fund, manage, and represent them can also become targets of online abuse. Hostile content may be directed at an organisation itself, its decisions or actions, or at individual staff and representatives. This can affect organisational reputation, professional activity, decision-making, and the wellbeing of those involved."
+    },
+    {
+      "front": "FamiliesSelect to reveal",
+      "back": "FamiliesThe effects of online abuse can extend to the families and loved ones of those targeted. They may witness the abuse and its impact, receive harmful messages themselves as indirect targets, or experience increased concern and fear for the safety and wellbeing of someone close to them."
+    },
+    {
+      "front": "FansSelect to reveal",
+      "back": "FansFans are the largest group in sport and are often overlooked. They can be affected by the abuse they encounter within sporting communities, even when they are not its direct target. Identity-based abuse aimed at an athlete, official, or other public figure can also affect fans who share that identity, contributing to an environment in which they may feel unwelcome or unsafe."
+    }
+  ],
+  "m2_explore": {
+    "prompt": "After receiving repeated abusive messages online, an athlete begins posting on social media less frequently. Their coach notices they seem distracted during training, and they have recently mentioned sleeping poorly and feeling anxious about attending public events.",
+    "choices": [
+      {
+        "text": "Emotional distress",
+        "correct": true,
+        "hint": "They feel anxious about attending public events."
+      },
+      {
+        "text": "Sleep disruption",
+        "correct": true,
+        "hint": "They have mentioned sleeping poorly."
+      },
+      {
+        "text": "Reduced confidence",
+        "correct": true,
+        "hint": "Posting less and pulling back can reflect self-doubt after repeated abuse."
+      },
+      {
+        "text": "Sense of safety",
+        "correct": true,
+        "hint": "Anxiety about public events can signal concern for their safety offline."
+      },
+      {
+        "text": "Focus and performance",
+        "correct": true,
+        "hint": "Their coach notices they seem distracted during training."
+      },
+      {
+        "text": "Stepping away",
+        "correct": true,
+        "hint": "They have begun posting on social media less frequently."
+      }
+    ],
+    "solution": "These impacts can be interconnected. Online abuse may affect several areas of a person’s life at the same time, and the effects may develop or intensify over time. Recognising these signs can help people across sport respond with greater awareness and support."
+  },
+  "m3_checklist": [
+    "1. Assess the situation and your safety. Consider the nature of the content and whether you or someone else may be at immediate risk.",
+    "2. Collect evidence. Save abusive posts, messages, profile information, URLs, and screenshots where appropriate.",
+    "3. Record key details. Note the date, time, username or account, and relevant information about what occurred.",
+    "4. Use platform safety tools. Restrict, mute, or block the account where appropriate to limit further contact or exposure.",
+    "5. Report through the platform. Review the platform’s relevant policies and flag the content or account using its built-in reporting options.",
+    "6. Seek additional support or escalate when needed. Contact your organisation’s welfare or safeguarding lead where relevant. If you feel there is a threat to your safety, contact the appropriate local authorities or emergency services."
+  ],
+  "m3_tabs": [
+    {
+      "title": "European Union",
+      "html": "<p>The <strong>EU AI Act</strong> uses a risk-based framework for AI and introduces transparency requirements for certain AI-generated and manipulated content, including some deepfakes.</p>"
+    },
+    {
+      "title": "United Kingdom",
+      "html": "<p>Under the <strong>Online Safety Act</strong>, AI-generated content shared by users can fall within the responsibilities of regulated online services, including relevant duties concerning illegal content and user safety.</p>"
+    }
+  ],
+  "m3_sorting": {
+    "items": [
+      "Assess the situation and your safety",
+      "Collect evidence",
+      "Record key details",
+      "Use platform safety tools",
+      "Report through the platform",
+      "Seek additional support or escalate when needed"
+    ],
+    "solution": "<p>Correct! You’ve identified the recommended sequence for responding to online abuse on social media. Following a clear process helps preserve important information, reduce further exposure, and ensure the situation is reported or escalated appropriately.</p><p><strong>Correct order:</strong> Assess the situation and your safety → Collect evidence → Record key details → Use platform safety tools → Report through the platform → Seek additional support or escalate when needed.</p>"
+  },
+  "m3_sorting_raw": {
+    "items": [
+      {
+        "id": "order-1",
+        "alt": "",
+        "type": "text",
+        "textContent": "<p>Assess the situation and your safety</p>",
+        "imageContent": ""
+      },
+      {
+        "id": "order-2",
+        "alt": "",
+        "type": "text",
+        "textContent": "<p>Collect evidence</p>",
+        "imageContent": ""
+      },
+      {
+        "id": "order-3",
+        "alt": "",
+        "type": "text",
+        "textContent": "<p>Record key details</p>",
+        "imageContent": ""
+      },
+      {
+        "id": "order-4",
+        "alt": "",
+        "type": "text",
+        "textContent": "<p>Use platform safety tools</p>",
+        "imageContent": ""
+      },
+      {
+        "id": "order-5",
+        "alt": "",
+        "type": "text",
+        "textContent": "<p>Report through the platform</p>",
+        "imageContent": ""
+      },
+      {
+        "id": "order-6",
+        "alt": "",
+        "type": "text",
+        "textContent": "<p>Seek additional support or escalate when needed</p>",
+        "imageContent": ""
+      }
+    ],
+    "title": "1. Put the steps below in the recommended order.",
+    "format": {
+      "gap": 24,
+      "width": 100,
+      "textAlign": "start",
+      "paddingTop": 32,
+      "accentColor": "",
+      "paddingBottom": 32,
+      "paddingLinked": true,
+      "backgroundType": "LIGHT",
+      "backgroundColor": "",
+      "contentMaxWidth": 3
+    },
+    "grading": {
+      "weight": 0,
+      "showAnswer": "finished",
+      "maxAttempts": "",
+      "partialCredit": false
+    },
+    "settings": {
+      "direction": "vertical",
+      "shuffleItems": true,
+      "completionMode": "tried",
+      "showMoveButtons": true,
+      "showInstructions": false,
+      "showPositionInputs": true
+    },
+    "solution": "<p>Correct! You’ve identified the recommended sequence for responding to online abuse on social media. Following a clear process helps preserve important information, reduce further exposure, and ensure the situation is reported or escalated appropriately.</p><p><strong>Correct order:</strong> Assess the situation and your safety → Collect evidence → Record key details → Use platform safety tools → Report through the platform → Seek additional support or escalate when needed.</p>",
+    "correctOrder": [
+      "order-1",
+      "order-2",
+      "order-3",
+      "order-4",
+      "order-5",
+      "order-6"
+    ],
+    "instructions": "Arrange the steps from 1 (first response) to 6 (further support or escalation). Drag the steps, or use the move buttons or position numbers, then submit. You can try as many times as you like.",
+    "grade_required": 0,
+    "grader_assignment": null
+  },
+  "m3_tf": [
+    {
+      "prompt": "If an athlete receives abusive content, they should delete it immediately and respond directly to the person responsible.",
+      "choices": [
+        {
+          "text": "True",
+          "correct": false,
+          "hint": "Not quite. Review the statement and try again."
+        },
+        {
+          "text": "False",
+          "correct": true,
+          "hint": "Correct. It is recommended to collect relevant evidence before deleting content, and avoid engaging directly with the person responsible for the abuse."
+        }
+      ]
+    },
+    {
+      "prompt": "Publicly sharing abusive content can help address the situation by drawing more attention to it.",
+      "choices": [
+        {
+          "text": "True",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "False",
+          "correct": true,
+          "hint": "Correct. Sharing or reposting abusive content can increase its reach and expose the person targeted, and others, to the harmful content again. Use appropriate reporting channels instead."
+        }
+      ]
+    },
+    {
+      "prompt": "AI can help identify potentially harmful content, but human judgement remains important when interpreting context.",
+      "choices": [
+        {
+          "text": "True",
+          "correct": true,
+          "hint": "Correct. AI can support early detection and flag potentially harmful content for review, but context, language, and changing abuse tactics can make human judgement important."
+        },
+        {
+          "text": "False",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        }
+      ]
+    }
+  ],
+  "m4_tabs": [
+    {
+      "title": "Criminal law",
+      "html": "<p><strong>What it can cover:</strong> Conduct that constitutes a criminal offence under the applicable law, which may include certain threats, stalking, hate crimes, or non-consensual sharing of intimate images.</p><p><strong>Who takes action:</strong> Law enforcement may investigate, and the relevant prosecuting authority determines whether a case proceeds.</p><p><strong>Possible outcomes:</strong> Criminal penalties can include fines or imprisonment, depending on the offence and jurisdiction.</p><details><summary><strong>See an example</strong></summary><p>Following a controversial decision during a match, a referee begins receiving repeated messages in his social media from the same account. The messages become increasingly threatening and include references to seriously harming the referee and members of their family. Depending on the applicable law and circumstances, threats of this nature could lead to a report to law enforcement and a criminal investigation.</p></details>"
+    },
+    {
+      "title": "Civil law",
+      "html": "<p><strong>What it can cover:</strong> Disputes involving legal rights between individuals or organisations, which may include defamation, harassment, misuse of private information, or other privacy-related claims.</p><p><strong>Who takes action:</strong> The person or organisation bringing the claim initiates the legal process.</p><p><strong>Possible outcomes:</strong> Depending on the applicable law, remedies can include compensation or court orders requiring particular conduct to stop.</p><details><summary><strong>See an example</strong></summary><p>False allegations about an athlete begin circulating online and are repeatedly shared. The claims damage the athlete’s professional reputation, and a sponsor ends its relationship with them after seeing such allegations. Depending on the applicable law and circumstances, the athlete may be able to bring a civil claim seeking a remedy for the harm caused.</p></details>"
+    },
+    {
+      "title": "Administrative law and regulation",
+      "html": "<p><strong>What it can cover:</strong> Legal obligations enforced by regulators, including rules applying to online services or the handling of personal data.</p><p><strong>Who takes action:</strong> Relevant regulatory authorities oversee and enforce these requirements. Individuals and organisations may also be able to submit complaints.</p><p><strong>Possible outcomes:</strong> Regulators may investigate, require changes, or impose penalties where the applicable law gives them those powers.</p><details><summary><strong>See an example</strong></summary><p>An athlete discovers that their personal contact information has been published online without their permission. The information continues to circulate, creating concerns about their privacy and safety. Depending on the applicable data protection rules, the athlete or their organisation may be able to raise the matter with the relevant regulatory authority.</p></details>"
+    }
+  ],
+  "m4_accordion": [
+    {
+      "title": "United Kingdom",
+      "html": "<p>In the UK, several laws can apply to harmful online conduct depending on the circumstances. The Online Safety Act 2023, for example, includes offences concerning threatening communications and sharing or threatening to share certain intimate images without consent. Existing harassment and stalking offences can also apply to relevant conduct.</p><p><em>Source: <a href=\"https://www.legislation.gov.uk/\" target=\"_blank\" rel=\"noopener\">Legislation.gov.uk</a></em></p>"
+    },
+    {
+      "title": "United States",
+      "html": "<p>In the United States, both federal and state laws may apply. Federal law, for example, addresses certain stalking conduct involving electronic or online communications when its statutory requirements are met. State laws can provide additional protections, so the applicable rules depend on the circumstances and jurisdiction.</p><p><em>Source: <a href=\"https://uscode.house.gov/\" target=\"_blank\" rel=\"noopener\">U.S. Code</a></em></p>"
+    },
+    {
+      "title": "Czechia",
+      "html": "<p>Czechia law does not rely on a single offence of “online abuse”. Existing legislation can apply to specific harmful behaviours carried out online. For example, the Czech Criminal Code addresses stalking, including conduct carried out through electronic communications. Czech Police guidance explicitly recognises cyberstalking and identifies repeated social media messages, threats, misuse of personal data, and reputational attacks among behaviours that may occur in stalking cases.</p><p>The Czech Civil Code (Act No. 89/2012 Coll.) also protects personality rights, including a person’s dignity, honour and privacy. A person affected by unlawful interference can seek to have the interference stopped and its consequences remedied.</p><p><em>Source: <a href=\"https://e-sbirka.gov.cz\" target=\"_blank\" rel=\"noopener\">e-Sbírka</a></em></p>"
+    },
+    {
+      "title": "Spain",
+      "html": "<p>Spain’s Criminal Code specifically addresses several behaviours that can occur through digital platforms. Its stalking provisions cover repeated unwanted contact through any means of communication and also address the misuse of someone’s personal data. Spanish law also specifically covers the non-consensual use of a person’s image to create fake social-media profiles when this causes harassment or humiliation.</p><p>Spain also gives particular legal attention to some forms of online hate speech: penalties can be increased when certain hate-related offences are committed through the internet or information technologies in a way that makes the content accessible to a large number of people.</p><p><em>Source: <a href=\"https://www.mpr.gob.es/Paginas/index.aspx\" target=\"_blank\" rel=\"noopener\">Gobierno de España</a></em></p>"
+    },
+    {
+      "title": "Sweden",
+      "html": "<p>In Sweden, online hate or abuse is not a separate legal category. The Swedish Police explains that the same criminal laws generally apply to conduct online as they do offline, with relevant offences potentially including unlawful threats, harassment, defamation, insult, unlawful invasion of privacy, sexual harassment, and agitation against a population group.</p><p>Swedish law also recognises unlawful persecution, which can arise from repeated criminal acts against the same person. Police guidance specifically advises people experiencing stalking to preserve emails, text messages, call records and other digital communications as potential evidence.</p><p><em>Sources: <a href=\"https://polisen.se\" target=\"_blank\" rel=\"noopener\">polisen.se</a>; <a href=\"https://www.riksdagen.se/sv/dokument-och-lagar/\" target=\"_blank\" rel=\"noopener\">Swedish Parliament</a></em></p>"
+    },
+    {
+      "title": "Slovenia",
+      "html": "<p>Slovenian law addresses online abuse through existing legislation covering specific harmful behaviours. A particularly relevant example is Article 134a of the Slovenian Criminal Code (KZ-1), which defines stalking to include repeated attempts to establish unwanted contact through electronic communications, where the conduct causes fear or a sense of threat. Slovenian authorities have also recognised the online dimension of stalking in guidance concerning the application of this provision.</p><p>Slovenian Police guidance recognises online violence as including behaviours such as threats, harassment, spreading false or insulting content, misuse of photographs, impersonation and the creation of harmful fake profiles. Whether particular conduct constitutes a criminal offence depends on the circumstances of the individual case.</p><p><em>Source: <a href=\"https://www.gov.si/\" target=\"_blank\" rel=\"noopener\">GOV.SI</a></em></p>"
+    }
+  ],
+  "m4_check": [
+    {
+      "prompt": "An abusive online incident may potentially involve more than one legal pathway. Which statement best explains why?",
+      "choices": [
+        {
+          "text": "The person targeted can choose whichever law they prefer.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "The same incident may raise different legal issues depending on the conduct, circumstances, and applicable law.",
+          "correct": true,
+          "hint": "Correct. Legal pathways can overlap. The conduct involved, available evidence, circumstances, and applicable law help determine which forms of legal action may be relevant."
+        },
+        {
+          "text": "Online incidents automatically involve criminal and civil law.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "Each social media platform determines which legal pathway applies.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        }
+      ]
+    },
+    {
+      "prompt": "Someone experiences harmful online behaviour, but the conduct does not meet the legal threshold for an offence or claim. What does this mean?",
+      "choices": [
+        {
+          "text": "The behaviour cannot be considered online abuse because the words used in the comments are not identical to what the law describes.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "The platform is solely responsible for responding and deciding what is online abuse.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "Other responses may still be available through platform rules, organisational policies, safeguarding procedures, or codes of conduct.",
+          "correct": true,
+          "hint": "Correct. Legal thresholds are only one part of the response to online abuse. Sporting organisations and platforms can establish standards and processes that apply even when legal action is unavailable."
+        },
+        {
+          "text": "The person should wait to see whether the behaviour becomes more serious.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        }
+      ]
+    },
+    {
+      "prompt": "Why can responding to online abuse through the law be challenging?",
+      "choices": [
+        {
+          "text": "Online behaviour falls outside national laws.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "People, platforms, and harmful activity may cross jurisdictions, and identifying those responsible or gathering evidence can be difficult.",
+          "correct": true,
+          "hint": "Correct. Jurisdiction, identification, evidence, enforcement capacity, and applicable legal thresholds can all affect the response to online abuse."
+        },
+        {
+          "text": "Online abuse can only be investigated when the responsible account uses a real name.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "Sporting organisations must complete their own investigation before authorities can become involved.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        }
+      ]
+    },
+    {
+      "prompt": "Which statement best describes how legal responses to online abuse can differ between countries?",
+      "choices": [
+        {
+          "text": "Every country has a specific offence called online abuse.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "European countries apply the same national laws because they share regional regulations.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "Online conduct is governed primarily by the country where the social media company is based.",
+          "correct": false,
+          "hint": "Not quite. Review the options and try again."
+        },
+        {
+          "text": "Countries may apply different existing laws to online conduct, and some legislation explicitly addresses particular digital behaviours.",
+          "correct": true,
+          "hint": "Correct. National legal frameworks differ. Existing offences and protections may apply to online conduct, and some countries explicitly address particular behaviours involving electronic communications or digital technologies."
+        }
+      ]
+    }
+  ],
+  "m5_flows": [
+    {
+      "title": "",
+      "steps": [
+        {
+          "id": "l1-1",
+          "media": null,
+          "title": "Protect yourself",
+          "content": "<h3 class=\"course-block-heading\">1 — Protect yourself</h3><p>For athletes and others with public-facing roles:</p><ul><li><strong>Manage your exposure.</strong> Review privacy and safety settings and control who can contact, mention, or tag you.</li><li><strong>Use safety tools.</strong> Mute, restrict, block, and report harmful accounts or content.</li><li><strong>Preserve evidence.</strong> Save relevant information when behaviour may need to be reported or escalated.</li><li><strong>Protect your wellbeing.</strong> Step away when needed and seek support from people you trust.</li></ul><details><summary><strong>Why does this matter?</strong></summary><p>Protecting yourself is part of the collective response. When people use safety and wellbeing tools, they are better equipped to prevent harm within the wider sporting community.</p></details>"
+        },
+        {
+          "id": "l1-2",
+          "media": null,
+          "title": "Support others",
+          "content": "<h3 class=\"course-block-heading\">2 — Support others</h3><p>As a teammate, colleague, fan, friend, or bystander:</p><ul><li><strong>Avoid amplification.</strong> Do not repost abusive content, including when condemning it.</li><li><strong>Check in privately.</strong> Let the person targeted know they have support.</li><li><strong>Report appropriately.</strong> Use platform or organisational reporting channels.</li><li><strong>Speak up safely.</strong> Challenge harmful behaviour when it is appropriate and safe to do so.</li></ul><details><summary><strong>Why does this matter?</strong></summary><p>Supporting others strengthens the sporting community. Small actions from teammates, colleagues, friends, fans, and other bystanders can help create a social support system where people feel heard, protected, and cared for, and harmful behaviour is less likely to go unchallenged.</p></details>"
+        },
+        {
+          "id": "l1-3",
+          "media": null,
+          "title": "Act safely",
+          "content": "<h3 class=\"course-block-heading\">3 — Act safely</h3><p>When responding to online abuse, consider the situation, personal safety, and whether additional support is needed:</p><ul><li><strong>Assess the situation.</strong> Consider the nature of the behaviour, whether it is escalating, and whether anyone may be at risk.</li><li><strong>Avoid unsafe engagement.</strong> Do not confront or engage directly when doing so could increase harm or place someone at risk.</li><li><strong>Know when to seek support.</strong> Involve a trusted person or the appropriate organisational contact when the situation requires additional help.</li><li><strong>Escalate safety concerns.</strong> Threats, repeated unwanted contact, exposure of personal information, or other safety concerns may require further organisational or external support.</li></ul><details><summary><strong>Why does this matter?</strong></summary><p>Acting safely helps connect individual action with the right level of support. Recognising when a situation requires additional help allows others to become involved and helps ensure that safety remains the priority.</p></details>"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "steps": [
+        {
+          "id": "l2-1",
+          "media": null,
+          "title": "Prepare",
+          "content": "<h3 class=\"course-block-heading\">1 — Prepare</h3><p>Develop policies and codes of conduct, provide education and training, and establish clear expectations for digital behaviour.</p>"
+        },
+        {
+          "id": "l2-2",
+          "media": null,
+          "title": "Protect",
+          "content": "<h3 class=\"course-block-heading\">2 — Protect</h3><p>Provide welfare and safeguarding support, platform safety tools, moderation, and appropriate mechanisms for people at risk.</p>"
+        },
+        {
+          "id": "l2-3",
+          "media": null,
+          "title": "Respond",
+          "content": "<h3 class=\"course-block-heading\">3 — Respond</h3><p>Create accessible reporting pathways, preserve appropriate records, apply organisational procedures, and coordinate escalation when necessary.</p>"
+        },
+        {
+          "id": "l2-4",
+          "media": null,
+          "title": "Connect",
+          "content": "<h3 class=\"course-block-heading\">4 — Connect</h3><p>Work with other organisations, platforms, authorities, researchers, advocacy groups, and specialist services when a response extends beyond the organisation’s own capabilities.</p>"
+        },
+        {
+          "id": "l2-5",
+          "media": null,
+          "title": "Stronger together",
+          "content": "<h3 class=\"course-block-heading\">5 — Stronger together</h3><p><strong>Organisations are stronger when they work together.</strong> Clubs can provide frontline support, federations set shared standards, platforms enable reporting and moderation, media organisations manage published content, and advocacy groups may contribute with specialised support and education. Together, they can create a coordinated network of protection and response against online abuse.</p>"
+        }
+      ]
+    },
+    {
+      "title": "",
+      "steps": [
+        {
+          "id": "l3-1",
+          "media": null,
+          "title": "Education",
+          "content": "<h3 class=\"course-block-heading\">1 — Education</h3><p>Education can help people recognise online abuse, understand its consequences, and know how to respond safely. Digital and media literacy can also strengthen critical thinking about what behaviours are appropriate in online settings.</p>"
+        },
+        {
+          "id": "l3-2",
+          "media": null,
+          "title": "Shared standards",
+          "content": "<h3 class=\"course-block-heading\">2 — Shared standards</h3><p>Clear expectations help establish which behaviours are considered acceptable within sporting communities. Shared standards around respect, inclusion, fair play, and digital participation can guide behaviour and give individuals and organisations a stronger basis for challenging abuse.</p>"
+        },
+        {
+          "id": "l3-3",
+          "media": null,
+          "title": "Research and evidence",
+          "content": "<h3 class=\"course-block-heading\">3 — Research and evidence</h3><p>Evidence and data-driven research help map the patterns where online abuse occurs, how harmful behaviour evolves in time, and which responses are more effective. Stronger knowledge can inform prevention, education, organisational practice, technology, and policy.</p>"
+        },
+        {
+          "id": "l3-4",
+          "media": null,
+          "title": "Policy and law",
+          "content": "<h3 class=\"course-block-heading\">4 — Policy and law</h3><p>Policies and laws can establish boundaries, responsibilities, protections, and routes to accountability. They can influence behaviour by clarifying consequences and providing mechanisms for reporting, intervention, and redress.</p>"
+        },
+        {
+          "id": "l3-5",
+          "media": null,
+          "title": "Technology and platform design",
+          "content": "<h3 class=\"course-block-heading\">5 — Technology and platform design</h3><p>The design of digital platforms can influence how easily harmful content is created, discovered, amplified, reported, or removed. Moderation, detection, reporting tools, and other safety features can help reduce opportunities for abuse to spread and persist.</p>"
+        },
+        {
+          "id": "l3-6",
+          "media": null,
+          "title": "Community norms",
+          "content": "<h3 class=\"course-block-heading\">6 — Community norms</h3><p>Social norms influence what people perceive as normal, acceptable, or worth challenging. Athletes, fans, media, organisations, and public figures all contribute to the culture surrounding sport. When communities consistently challenge abusive behaviour and reinforce respect, they can help shift the norms that allow online abuse to persist.</p>"
+        },
+        {
+          "id": "l3-7",
+          "media": null,
+          "title": "Working together",
+          "content": "<h3 class=\"course-block-heading\">7 — Working together</h3><p><strong>These factors work together across sport and in our society.</strong> Education can shape how people understand online behaviours, while shared standards and laws can clarify expectations, research can identify emerging risks, and technology can influence how harmful content spreads.</p><p>Sporting communities are only a part of our society: they are influenced by broader cultural norms, and athletes, fans, media, organisations, and other voices in sport can also help shape the world we live in together.</p>"
+        }
+      ]
+    }
+  ],
+  "summary_Final_quiz_3_minute_readiness": [
+    {
+      "prompt": "In the 2025 UAOA Barometer, about how many sporting federations were concerned that online abuse could drive talented athletes out of sport?",
+      "choices": [
+        {
+          "text": "Less than 50%",
+          "correct": false,
+          "hint": "About 90%. The UAOA Barometer shows that about nine in ten sporting federations surveyed expressed concern that online abuse could drive talented athletes out of sport. Online abuse can ultimately influence whether people continue participating in sporting communities."
+        },
+        {
+          "text": "About 72%",
+          "correct": false,
+          "hint": "About 90%. The UAOA Barometer shows that about nine in ten sporting federations surveyed expressed concern that online abuse could drive talented athletes out of sport. Online abuse can ultimately influence whether people continue participating in sporting communities."
+        },
+        {
+          "text": "About 90%",
+          "correct": true,
+          "hint": "About 90%. The UAOA Barometer shows that about nine in ten sporting federations surveyed expressed concern that online abuse could drive talented athletes out of sport. Online abuse can ultimately influence whether people continue participating in sporting communities."
+        }
+      ]
+    },
+    {
+      "prompt": "According to research, what has greater exposure to online harassment been associated with among sportspeople?",
+      "choices": [
+        {
+          "text": "Psychological distress",
+          "correct": true,
+          "hint": "Greater exposure to online harassment has been associated with higher levels of psychological distress, highlighting how hostile online content can affect psychological wellbeing."
+        },
+        {
+          "text": "Fewer friends",
+          "correct": false,
+          "hint": "Greater exposure to online harassment has been associated with higher levels of psychological distress, highlighting how hostile online content can affect psychological wellbeing."
+        },
+        {
+          "text": "More training hours",
+          "correct": false,
+          "hint": "Greater exposure to online harassment has been associated with higher levels of psychological distress, highlighting how hostile online content can affect psychological wellbeing."
+        }
+      ]
+    },
+    {
+      "prompt": "When a harmful comment about an athlete appears online, which features can influence how far it travels?",
+      "choices": [
+        {
+          "text": "Platform design and recommendation systems",
+          "correct": false,
+          "hint": "Both. Platform design, recommendation systems, user interactions, and reporting mechanisms can influence how harmful content travels and reaches new audiences."
+        },
+        {
+          "text": "User interactions and reporting mechanisms",
+          "correct": false,
+          "hint": "Both. Platform design, recommendation systems, user interactions, and reporting mechanisms can influence how harmful content travels and reaches new audiences."
+        },
+        {
+          "text": "Both",
+          "correct": true,
+          "hint": "Both. Platform design, recommendation systems, user interactions, and reporting mechanisms can influence how harmful content travels and reaches new audiences."
+        }
+      ]
+    },
+    {
+      "prompt": "If a player receives humiliating comments after a loss. Similar messages flood their account for days, also attacking their race. What is happening?",
+      "choices": [
+        {
+          "text": "Offensive speech only",
+          "correct": false,
+          "hint": "Several forms can overlap. The humiliating language is offensive speech, the repeated public aggression creates digital hostility, and racist targeting may constitute hate speech."
+        },
+        {
+          "text": "Digital hostility and hate speech only",
+          "correct": false,
+          "hint": "Several forms can overlap. The humiliating language is offensive speech, the repeated public aggression creates digital hostility, and racist targeting may constitute hate speech."
+        },
+        {
+          "text": "Several forms of online abuse are overlapping",
+          "correct": true,
+          "hint": "Several forms can overlap. The humiliating language is offensive speech, the repeated public aggression creates digital hostility, and racist targeting may constitute hate speech."
+        }
+      ]
+    },
+    {
+      "prompt": "What is the best recommendation for staying safe when someone encounters online abuse?",
+      "choices": [
+        {
+          "text": "Respond directly to stop the behaviour",
+          "correct": false,
+          "hint": "Act safely and use the right reporting channels. Assess whether the behaviour is escalating or anyone may be at risk, avoid unsafe engagement, preserve relevant evidence, and report through the appropriate platform or organisational channels. Seek additional support when needed."
+        },
+        {
+          "text": "Assess the situation, avoid unsafe engagement, and report appropriately",
+          "correct": true,
+          "hint": "Act safely and use the right reporting channels. Assess whether the behaviour is escalating or anyone may be at risk, avoid unsafe engagement, preserve relevant evidence, and report through the appropriate platform or organisational channels. Seek additional support when needed."
+        },
+        {
+          "text": "Delete the content and leave the platform",
+          "correct": false,
+          "hint": "Act safely and use the right reporting channels. Assess whether the behaviour is escalating or anyone may be at risk, avoid unsafe engagement, preserve relevant evidence, and report through the appropriate platform or organisational channels. Seek additional support when needed."
+        }
+      ]
+    },
+    {
+      "prompt": "Can existing laws help protect people from online abuse, including abuse involving AI-generated content?",
+      "choices": [
+        {
+          "text": "Yes, but protections vary between countries.",
+          "correct": true,
+          "hint": "Laws can help protect people from online abuse. However, legal protections and responsibilities vary between countries. Some jurisdictions have introduced specific measures addressing AI-generated intimate images and other forms of digital abuse."
+        },
+        {
+          "text": "Only when the abuse involves physical threats.",
+          "correct": false,
+          "hint": "Laws can help protect people from online abuse. However, legal protections and responsibilities vary between countries. Some jurisdictions have introduced specific measures addressing AI-generated intimate images and other forms of digital abuse."
+        },
+        {
+          "text": "Only when the content is shared publicly.",
+          "correct": false,
+          "hint": "Laws can help protect people from online abuse. However, legal protections and responsibilities vary between countries. Some jurisdictions have introduced specific measures addressing AI-generated intimate images and other forms of digital abuse."
+        }
+      ]
+    },
+    {
+      "prompt": "A teammate has been receiving abusive messages and seems increasingly distressed. What is the strongest response from a supportive system?",
+      "choices": [
+        {
+          "text": "Share the messages publicly so others can defend them",
+          "correct": false,
+          "hint": "Support starts with you! Check in privately, avoid amplifying the abuse, use appropriate reporting channels, and speak up when it is safe to do so."
+        },
+        {
+          "text": "Check in privately and help them access appropriate support",
+          "correct": true,
+          "hint": "Support starts with you! Check in privately, avoid amplifying the abuse, use appropriate reporting channels, and speak up when it is safe to do so."
+        },
+        {
+          "text": "Limit interactions with the teammate",
+          "correct": false,
+          "hint": "Support starts with you! Check in privately, avoid amplifying the abuse, use appropriate reporting channels, and speak up when it is safe to do so."
+        }
+      ]
+    },
+    {
+      "prompt": "Positive action starts with each of us. What can we do?",
+      "choices": [
+        {
+          "text": "Protect yourself, Support others, Act safely",
+          "correct": true,
+          "hint": "Protect yourself. Support others. Act safely. We can manage our social media exposure, use safety tools, preserve evidence, support others who are targeted, and recognise when a situation requires additional help."
+        },
+        {
+          "text": "Monitor content, Confront abuser, Delete evidence",
+          "correct": false,
+          "hint": "Protect yourself. Support others. Act safely. We can manage our social media exposure, use safety tools, preserve evidence, support others who are targeted, and recognise when a situation requires additional help."
+        },
+        {
+          "text": "Report everything, Respond publicly, Stay online",
+          "correct": false,
+          "hint": "Protect yourself. Support others. Act safely. We can manage our social media exposure, use safety tools, preserve evidence, support others who are targeted, and recognise when a situation requires additional help."
+        }
+      ]
+    },
+    {
+      "prompt": "Organisations have a role too. Several people in a sporting organisation have reported online abuse. What would create the strongest organisational response?",
+      "choices": [
+        {
+          "text": "Focus primarily on responding to individual incidents",
+          "correct": false,
+          "hint": "Effective organisational responses connect preparation, protection, response and cooperation."
+        },
+        {
+          "text": "Build frameworks, strengthen safeguarding and coordinate action",
+          "correct": true,
+          "hint": "Effective organisational responses connect preparation, protection, response and cooperation."
+        },
+        {
+          "text": "Expect the platforms to manage the problem",
+          "correct": false,
+          "hint": "Effective organisational responses connect preparation, protection, response and cooperation."
+        }
+      ]
+    },
+    {
+      "prompt": "Online abuse is also shaped by conditions beyond any one person or organisation. Which can influence whether harmful behaviour is normalised, challenged or prevented?",
+      "choices": [
+        {
+          "text": "Education and community norms",
+          "correct": false,
+          "hint": "All of these. Education, shared standards, research and evidence, policy and law, technological solutions and platform design, and community norms can all shape online behaviour. Sport is influenced by these wider social conditions, and sporting communities can also help shape the world we live in together."
+        },
+        {
+          "text": "Research and policies",
+          "correct": false,
+          "hint": "All of these. Education, shared standards, research and evidence, policy and law, technological solutions and platform design, and community norms can all shape online behaviour. Sport is influenced by these wider social conditions, and sporting communities can also help shape the world we live in together."
+        },
+        {
+          "text": "Technology and AI solutions",
+          "correct": false,
+          "hint": "All of these. Education, shared standards, research and evidence, policy and law, technological solutions and platform design, and community norms can all shape online behaviour. Sport is influenced by these wider social conditions, and sporting communities can also help shape the world we live in together."
+        },
+        {
+          "text": "All of these",
+          "correct": true,
+          "hint": "All of these. Education, shared standards, research and evidence, policy and law, technological solutions and platform design, and community norms can all shape online behaviour. Sport is influenced by these wider social conditions, and sporting communities can also help shape the world we live in together."
+        }
+      ]
+    }
+  ],
+  "summary_One_more_question_not_scored_": [
+    {
+      "prompt": "Would you like to take further action with UAOA?",
+      "choices": [
+        {
+          "text": "I want to take action",
+          "correct": true,
+          "hint": "There are different ways to take action. UAOA brings people and organisations across sport together to strengthen how they prepare for, prevent and respond to online abuse."
+        },
+        {
+          "text": "I want to keep learning",
+          "correct": true,
+          "hint": "There are different ways to take action. UAOA brings people and organisations across sport together to strengthen how they prepare for, prevent and respond to online abuse."
+        },
+        {
+          "text": "I want to strengthen my organisation",
+          "correct": true,
+          "hint": "There are different ways to take action. UAOA brings people and organisations across sport together to strengthen how they prepare for, prevent and respond to online abuse."
+        },
+        {
+          "text": "Not right now",
+          "correct": true,
+          "hint": "There are different ways to take action. UAOA brings people and organisations across sport together to strengthen how they prepare for, prevent and respond to online abuse."
+        }
+      ]
+    }
+  ]
+}

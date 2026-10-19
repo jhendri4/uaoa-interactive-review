@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; overflow: hidden; color-scheme: light; }
+  body { font-family: 'Cerebri Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center; padding: 12px 0 8px; position: relative; }
+  .more {
+    display: inline-flex; align-items: center; gap: 10px; position: relative; z-index: 2;
+    font: inherit; font-weight: 700; font-size: 15px; letter-spacing: .02em;
+    color: #1C3564; background: #fff; border: 1.5px solid #1C3564;
+    border-radius: 999px; padding: 10px 20px; cursor: pointer;
+    transition: background-color .15s ease-out, color .15s ease-out;
+  }
+  .more:hover { background: #1C3564; color: #fff; }
+  .more:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1C3564; }
+  .more[hidden] { display: none; }
+  /* Gated: invisible but still in flow so the iframe height (and page scroll) stay put */
+  .more.is-gated {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .more svg { flex: none; transition: transform .2s ease-out; }
+  .more:hover svg { transform: translateY(2px); }
+  .fade {
+    position: absolute; left: 0; right: 0; top: 0; height: 72px; z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), #fff 70%);
+  }
+  .fade.is-gated { opacity: 0; }
+  .hint { margin: 8px 0 0; text-align: center; font-size: 12px; color: #95A0B6; }
+  .hint[hidden] { display: none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="fade" id="fade" aria-hidden="true"></div>
+    <button type="button" class="more" id="more" aria-label="Continue to reveal more content">
+      <span>Continue</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
+  </div>
+  <p class="hint" id="hint" hidden></p>
+  <script>
+  (function () {
+    // Mark this iframe so sibling breaks can detect each other
+    window.__UAOA_SCROLL_FADE__ = true;
+    var INSTANCE = 'sf-' + Math.random().toString(36).slice(2, 10);
+    var VEIL_ATTR = 'data-uaoa-veiled';
+    var BREAK_ATTR = 'data-uaoa-scroll-fade';
+
+    var btn = document.getElementById('more');
+    var fade = document.getElementById('fade');
+    var hint = document.getElementById('hint');
+    var hostEl = null;
+    var locked = false;
+    var unlocked = false;
+    var observer = null;
+    /** True while the previous interactive still needs a completion action. */
+    var gateHold = false;
+
+    function frame() { try { return window.frameElement; } catch (e) { return null; } }
+
+    function hostDoc() {
+      var f = frame();
+      return (f && f.ownerDocument) || document;
+    }
+
+    function tagFrame() {
+      var f = frame();
+      if (f) f.setAttribute(BREAK_ATTR, INSTANCE);
+    }
+
+    function syncHeight() {
+      var f = frame();
+      if (f) {
+        f.style.setProperty('height', Math.ceil(document.body.getBoundingClientRect().height) + 'px', 'important');
+        f.style.setProperty('border', '0', 'important');
+      }
+    }
+
+    function blockHost(el) {
+      var node = el, best = el;
+      while (node && node !== document.documentElement) {
+        best = node;
+        var p = node.parentElement;
+        if (p) {
+          var kids = Array.prototype.filter.call(p.children, function (c) { return c.nodeType === 1; });
+          if (kids.length >= 2 && kids.indexOf(node) >= 0) return node;
+        }
+        node = node.parentElement;
+      }
+      return best;
+    }
+
+    function isFadeBreak(el) {
+      if (!el || el === hostEl) return false;
+      if (el.getAttribute && el.getAttribute(BREAK_ATTR)) return true;
+      var iframes = el.querySelectorAll ? el.querySelectorAll('iframe') : [];
+      for (var i = 0; i < iframes.length; i++) {
+        var ifr = iframes[i];
+        if (ifr.getAttribute(BREAK_ATTR)) return true;
+        try {
+          if (ifr.contentWindow && ifr.contentWindow.__UAOA_SCROLL_FADE__) return true;
+        } catch (e) {}
+      }
+      return false;
+    }
+
+    /** Blocks after this break through the next Scroll Down break (inclusive).
+     *  Including the next break hides stacked buttons until this one is clicked. */
+    function segmentBlocks(host) {
+      var out = [], n = host.nextElementSibling;
+      while (n) {
+        if (n.nodeType === 1) out.push(n);
+        if (isFadeBreak(n)) break;
+        n = n.nextElementSibling;
+      }
+      return out;
+    }
+
+    function myVeiledNodes() {
+      var doc = hostDoc();
+      return Array.prototype.slice.call(doc.querySelectorAll('[' + VEIL_ATTR + '="' + INSTANCE + '"]'));
+    }
+
+    var SPACER_ATTR = 'data-uaoa-pin-spacer';
+
+    function blockListParent(target) {
+      var node = target;
+      while (node && node.parentElement) {
+        if (node.parentElement.children && node.parentElement.children.length >= 2) {
+          return node.parentElement;
+        }
+        node = node.parentElement;
+      }
+      return hostDoc().body || target.parentElement;
+    }
+
+    function collapseBreak() {
+      var f = frame();
+      if (!f) return;
+      try {
+        fade.hidden = true;
+        btn.hidden = true;
+        document.documentElement.style.height = '0';
+        document.body.style.height = '0';
+        document.body.style.margin = '0';
+        document.body.style.overflow = 'hidden';
+        f.style.setProperty('height', '0px', 'important');
+        f.style.setProperty('min-height', '0', 'important');
+        f.style.setProperty('max-height', '0px', 'important');
+        f.style.setProperty('border', '0', 'important');
+        f.style.setProperty('opacity', '0', 'important');
+        f.style.setProperty('pointer-events', 'none', 'important');
+        if (hostEl) {
+          hostEl.style.setProperty('height', '0', 'important');
+          hostEl.style.setProperty('min-height', '0', 'important');
+          hostEl.style.setProperty('margin', '0', 'important');
+          hostEl.style.setProperty('padding', '0', 'important');
+          hostEl.style.setProperty('overflow', 'hidden', 'important');
+        }
+      } catch (e) {}
+    }
+
+    /**
+     * Ask parent Custom JS to pin (reliable scroll context). Prefer the API
+     * once — do NOT also dispatch the event (that double-pins and jerks).
+     * Local smooth-scroll fallback if Custom JS is missing or stale.
+     */
+    function schedulePinToTop(target) {
+      var doc = hostDoc();
+      try {
+        var win = doc.defaultView;
+        if (win && win.UAOA && typeof win.UAOA.pinBlockToTop === 'function') {
+          win.UAOA.pinBlockToTop(target);
+          return;
+        }
+      } catch (e) {}
+      try {
+        doc.dispatchEvent(new CustomEvent('uaoa-scroll-fade-pin', { detail: { target: target } }));
+        if (doc.defaultView && doc.defaultView.UAOA && doc.defaultView.UAOA.__scrollPinInstalled) return;
+      } catch (e) {}
+
+      // Fallback if parent Custom JS missing: always hard-pin (never nearest).
+      var PAD = 24;
+      var win = doc.defaultView;
+      function topInset() {
+        var inset = 0;
+        var nodes = doc.querySelectorAll(
+          'header, nav, [class*="header"], [class*="Header"], [class*="toolbar"], [class*="TopBar"], [class*="top-bar"]'
+        );
+        for (var i = 0; i < nodes.length; i++) {
+          var st = win.getComputedStyle(nodes[i]);
+          if (st.position !== 'fixed' && st.position !== 'sticky') continue;
+          var r = nodes[i].getBoundingClientRect();
+          if (r.top <= 8 && r.height > 0 && r.height < 160) inset = Math.max(inset, r.bottom);
+        }
+        return inset + PAD;
+      }
+      function ensureSpacer() {
+        var parent = blockListParent(target);
+        var spacer = parent.querySelector('[' + SPACER_ATTR + ']');
+        if (!spacer) {
+          spacer = doc.createElement('div');
+          spacer.setAttribute(SPACER_ATTR, '1');
+          spacer.setAttribute('aria-hidden', 'true');
+          spacer.style.cssText =
+            'display:block;width:100%;height:0;margin:0;padding:0;border:0;pointer-events:none;flex:none;flex-shrink:0;';
+          parent.appendChild(spacer);
+        }
+        return spacer;
+      }
+      function hasMoreToPinPast() {
+        var veiled = doc.querySelectorAll('[' + VEIL_ATTR + ']');
+        for (var v = 0; v < veiled.length; v++) {
+          if (target.compareDocumentPosition(veiled[v]) & Node.DOCUMENT_POSITION_FOLLOWING) return true;
+        }
+        var breaks = doc.querySelectorAll('iframe[' + BREAK_ATTR + ']');
+        for (var b = 0; b < breaks.length; b++) {
+          var br = breaks[b];
+          if (!(target.compareDocumentPosition(br) & Node.DOCUMENT_POSITION_FOLLOWING)) continue;
+          if (br.offsetHeight > 2) return true;
+          var host = br.parentElement;
+          while (host && host !== doc.body) {
+            if (host.getAttribute && host.getAttribute(VEIL_ATTR) != null) return true;
+            host = host.parentElement;
+          }
+        }
+        return false;
+      }
+      function primaryScroller() {
+        var best = null;
+        var bestScore = -1;
+        var node = target.parentElement;
+        while (node && node !== doc.documentElement) {
+          var st = win.getComputedStyle(node);
+          var oy = st.overflowY;
+          if (
+            (oy === 'auto' || oy === 'scroll' || oy === 'overlay' || oy === 'hidden') &&
+            node.scrollHeight > node.clientHeight + 1
+          ) {
+            var h = node.clientHeight || 0;
+            var score = h + Math.max(0, node.scrollHeight - node.clientHeight) * 0.25;
+            if (h >= win.innerHeight * 0.45) score += 2000;
+            if (score > bestScore) { bestScore = score; best = node; }
+          }
+          node = node.parentElement;
+        }
+        return best || doc.scrollingElement || doc.documentElement;
+      }
+      function prepareAndScroll(smooth) {
+        if (!target || !target.isConnected) return;
+        var sc = primaryScroller();
+        var isPage = sc === doc.scrollingElement || sc === doc.documentElement || sc === doc.body;
+        var desired = topInset();
+        if (!isPage) {
+          var sTop = sc.getBoundingClientRect().top;
+          if (!(desired > sTop + 4)) desired = sTop + PAD;
+        }
+        var delta = target.getBoundingClientRect().top - desired;
+        var spacer = ensureSpacer();
+        var paneH = isPage ? win.innerHeight : sc.clientHeight;
+        var pinOffset = isPage ? desired : Math.max(0, desired - sc.getBoundingClientRect().top);
+        var grow = Math.max(0, Math.ceil(delta + 32), Math.ceil(paneH - pinOffset));
+        var cur = parseFloat(spacer.style.height) || 0;
+        if (grow > cur) spacer.style.height = grow + 'px';
+        delta = target.getBoundingClientRect().top - desired;
+        if (Math.abs(delta) < 2) return;
+        var behaviour = smooth ? 'smooth' : 'auto';
+        if (isPage) {
+          var pageY = win.pageYOffset || doc.documentElement.scrollTop || 0;
+          try { win.scrollTo({ top: Math.max(0, pageY + delta), behaviour: behaviour }); }
+          catch (e) { win.scrollTo(0, Math.max(0, pageY + delta)); }
+        } else {
+          var sRect = sc.getBoundingClientRect();
+          var tRect = target.getBoundingClientRect();
+          var chromeOverlap = Math.max(0, desired - sRect.top);
+          var max = Math.max(0, sc.scrollHeight - sc.clientHeight);
+          var nextTop = Math.min(Math.max(0, sc.scrollTop + (tRect.top - sRect.top) - chromeOverlap), max);
+          try {
+            if (typeof sc.scrollTo === 'function') sc.scrollTo({ top: nextTop, behaviour: behaviour });
+            else sc.scrollTop = nextTop;
+          } catch (e) { sc.scrollTop = nextTop; }
+        }
+      }
+      try {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { prepareAndScroll(true); });
+        });
+      } catch (e) { prepareAndScroll(true); }
+      setTimeout(function () { prepareAndScroll(true); }, 450);
+      setTimeout(function () { prepareAndScroll(Math.abs((target.getBoundingClientRect().top - topInset())) < 140); }, 750);
+      // Do not clearPinSpacers on the final reveal — removing the pad clamps
+      // scrollHeight and snaps the view back down after the pin.
+    }
+
+    function clearPinSpacers() {
+      var doc = hostDoc();
+      var spacers = doc.querySelectorAll('[' + SPACER_ATTR + ']');
+      for (var i = 0; i < spacers.length; i++) {
+        if (spacers[i].parentNode) spacers[i].parentNode.removeChild(spacers[i]);
+      }
+    }
+
+    function veil(blocks) {
+      blocks.forEach(function (el) {
+        el.setAttribute(VEIL_ATTR, INSTANCE);
+        el.style.setProperty('display', 'none', 'important');
+        el.setAttribute('aria-hidden', 'true');
+      });
+    }
+
+    function markComplete() {
+      try {
+        if (window.SCORMSTACK && typeof SCORMSTACK.markBlockCompleted === 'function') {
+          SCORMSTACK.markBlockCompleted();
+        }
+      } catch (e) {}
+    }
+
+    /** Immediate previous course block host (sibling of this Continue). */
+    function previousBlockHost(host) {
+      if (!host) return null;
+      var n = host.previousElementSibling;
+      while (n) {
+        if (n.nodeType === 1) return n;
+        n = n.previousElementSibling;
+      }
+      return null;
+    }
+
+    /** True if this iframe is a UAOA interactive that gates the following Continue. */
+    function isAwaitInteractiveFrame(ifr) {
+      if (!ifr || ifr.getAttribute(BREAK_ATTR)) return false;
+      if (ifr.getAttribute('data-uaoa-await') === '1') return true;
+      if (ifr.getAttribute('data-uaoa-complete') === '1') return true;
+      try {
+        var w = ifr.contentWindow;
+        if (!w || w.__UAOA_SCROLL_FADE__) return false;
+        // Opt-in flag, or already finished (so we can clear the gate)
+        return !!(w.__uaoaAwaitComplete || w.__uaoaInteractiveComplete);
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function frameStillAwaiting(ifr) {
+      if (!ifr) return false;
+      // Prefer live JS flags — attributes can lag if an older embed set
+      // data-uaoa-await but never cleared it on complete (stuck gate).
+      try {
+        var w = ifr.contentWindow;
+        if (w) {
+          if (w.__uaoaInteractiveComplete) return false;
+          if (w.__uaoaAwaitComplete) return true;
+        }
+      } catch (e) {}
+      if (ifr.getAttribute('data-uaoa-complete') === '1') return false;
+      if (ifr.getAttribute('data-uaoa-await') === '1') return true;
+      return false;
+    }
+
+    function isFadeIframe(ifr) {
+      if (!ifr) return false;
+      if (ifr.getAttribute(BREAK_ATTR)) return true;
+      try {
+        return !!(ifr.contentWindow && ifr.contentWindow.__UAOA_SCROLL_FADE__);
+      } catch (e) {
+        return false;
+      }
+    }
+
+    /**
+     * Nearest preceding await-interactive iframe.
+     * Skips text / chrome embeds (e.g. Mini Dictionary between Matteo and Continue).
+     * Stops at another fade Continue so we don't gate across segments.
+     */
+    function prevInteractiveFrame() {
+      var host = hostEl;
+      if (!host) {
+        var f0 = frame();
+        if (!f0) return null;
+        host = blockHost(f0);
+      }
+      var prev = previousBlockHost(host);
+      while (prev) {
+        if (isFadeBreak(prev)) return null;
+        var iframes = prev.querySelectorAll ? prev.querySelectorAll('iframe') : [];
+        for (var i = 0; i < iframes.length; i++) {
+          var ifr = iframes[i];
+          if (isFadeIframe(ifr)) return null;
+          if (isAwaitInteractiveFrame(ifr)) return ifr;
+        }
+        prev = previousBlockHost(prev);
+      }
+      return null;
+    }
+
+    function applyGateVisibility() {
+      if (unlocked) return;
+      // Keep the button in layout (visibility only) — display:none collapsed the
+      // iframe and made the course scroll jump while waiting on the interactive.
+      btn.classList.toggle('is-gated', !!gateHold);
+      fade.classList.toggle('is-gated', !!gateHold);
+      btn.setAttribute('aria-hidden', gateHold ? 'true' : 'false');
+      if (gateHold) {
+        btn.tabIndex = -1;
+        btn.hidden = false;
+        fade.hidden = false;
+      } else if (locked) {
+        btn.removeAttribute('tabIndex');
+        btn.hidden = false;
+        fade.hidden = false;
+      }
+    }
+
+    /**
+     * Hide Continue while the preceding interactive opts in via
+     * window.__uaoaAwaitComplete and has not yet finished
+     * (__uaoaInteractiveComplete / uaoa-interactive-completed).
+     */
+    function evaluateGate() {
+      if (unlocked) {
+        gateHold = false;
+        return;
+      }
+      var ifr = prevInteractiveFrame();
+      var nextHold = frameStillAwaiting(ifr);
+      if (nextHold === gateHold) return;
+      gateHold = nextHold;
+      applyGateVisibility();
+    }
+
+    function unveil() {
+      if (unlocked) return;
+      var nodes = myVeiledNodes();
+      if (!nodes.length && hostEl && hostEl.isConnected) nodes = segmentBlocks(hostEl);
+      if (!nodes.length) {
+        hint.textContent = 'Could not restore the following content. Refresh and try again.';
+        hint.hidden = false;
+        syncHeight();
+        return;
+      }
+
+      unlocked = true;
+      markComplete();
+      if (observer) { try { observer.disconnect(); } catch (e) {} observer = null; }
+
+      nodes.forEach(function (el, i) {
+        el.style.removeProperty('display');
+        el.removeAttribute(VEIL_ATTR);
+        el.removeAttribute('aria-hidden');
+        el.style.opacity = '0';
+        el.style.transition = 'opacity .45s ease-out';
+        setTimeout(function () { el.style.opacity = '1'; }, 30 + i * 40);
+        setTimeout(function () {
+          el.style.removeProperty('opacity');
+          el.style.removeProperty('transition');
+        }, 650);
+      });
+
+      fade.hidden = true;
+      btn.hidden = true;
+      collapseBreak();
+      syncHeight();
+
+      var first = nodes[0];
+      schedulePinToTop(first);
+      try { first.setAttribute('tabindex', '-1'); first.focus({ preventScroll: true }); } catch (e) {}
+
+      // Tell later breaks they may now be visible and should (re)lock their segments
+      try {
+        hostDoc().dispatchEvent(new CustomEvent('uaoa-scroll-fade-unlocked', { detail: { id: INSTANCE } }));
+      } catch (e) {}
+    }
+
+    function lock() {
+      if (unlocked) return;
+      var f = frame();
+      if (!f) {
+        hint.textContent = 'Preview only works inside the course player.';
+        hint.hidden = false;
+        syncHeight();
+        return;
+      }
+      tagFrame();
+      var host = blockHost(f);
+      var blocks = segmentBlocks(host);
+      if (!blocks.length && host.parentElement) {
+        host = blockHost(host.parentElement);
+        blocks = segmentBlocks(host);
+      }
+      // Still nothing — maybe earlier break still hides us; wait for unlock event
+      if (!blocks.length) {
+        locked = false;
+        return;
+      }
+      hostEl = host;
+      veil(blocks);
+      locked = true;
+      hint.hidden = true;
+      evaluateGate();
+
+      // Re-apply if ScormStack re-renders this segment
+      if (observer) try { observer.disconnect(); } catch (e) {}
+      if (host.parentElement) {
+        observer = new MutationObserver(function () {
+          if (unlocked) return;
+          var again = segmentBlocks(hostEl);
+          if (again.length) veil(again);
+          evaluateGate();
+        });
+        observer.observe(host.parentElement, { childList: true, subtree: true });
+      }
+    }
+
+    function tryLock() {
+      if (unlocked) return;
+      // Allow re-lock if we never successfully veiled (e.g. we were hidden by an earlier break)
+      if (!locked || myVeiledNodes().length === 0) lock();
+      evaluateGate();
+      syncHeight();
+    }
+
+    btn.addEventListener('click', function () {
+      if (unlocked || gateHold) return;
+      unveil();
+    });
+
+    window.addEventListener('pagehide', function () {
+      myVeiledNodes().forEach(function (el) {
+        el.style.removeProperty('display');
+        el.removeAttribute(VEIL_ATTR);
+        el.removeAttribute('aria-hidden');
+      });
+      clearPinSpacers();
+      if (observer) try { observer.disconnect(); } catch (e) {}
+    });
+
+    tagFrame();
+    window.addEventListener('load', tryLock);
+    setTimeout(tryLock, 200);
+    setTimeout(tryLock, 600);
+    setTimeout(tryLock, 1200);
+    try {
+      var doc = hostDoc();
+      doc.addEventListener('uaoa-scroll-fade-unlocked', function () {
+        setTimeout(tryLock, 50);
+        setTimeout(tryLock, 400);
+      });
+      doc.addEventListener('uaoa-interactive-completed', function (ev) {
+        var ifr = prevInteractiveFrame();
+        var src = ev && ev.detail && ev.detail.frame;
+        if (ifr && src && src !== ifr) return;
+        gateHold = false;
+        applyGateVisibility();
+      });
+    } catch (e) {}
+    // Interactive may load after this Continue — poll briefly for await/complete flags
+    var gatePolls = 0;
+    var gateTimer = setInterval(function () {
+      evaluateGate();
+      gatePolls += 1;
+      if (unlocked || gatePolls > 40) clearInterval(gateTimer);
+    }, 500);
+  })();
+  </script>
+</body>
+</html>

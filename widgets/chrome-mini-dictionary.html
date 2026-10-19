@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; background: transparent; overflow: hidden; color-scheme: light; }
+body { font-family: 'Cerebri Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif; color: #091324; }
+.section { border-top: 1px solid #C4CAD6; border-bottom: 1px solid #C4CAD6; padding: 16px 0 20px; }
+.section-head { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; }
+.section-head svg { flex: none; color: #1C3564; }
+.section-title { margin: 0; font-size: 18px; line-height: 26px; font-weight: 700; color: #1C3564; }
+.section-body { padding: 0 8px 0 34px; font-size: 16px; line-height: 26px; color: #091324; }
+.section-body p { margin: 0 0 12px; color: #091324; }
+.section-body strong { color: #1C3564; }
+.section-body .btn { margin-top: 8px; }
+@media (max-width: 600px) {
+  .section-body { padding-left: 0; padding-right: 0; }
+  .section-title { font-size: 16px; line-height: 24px; }
+}
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit;
+  font-weight: 700; letter-spacing: .01em; border: 1.5px solid transparent; border-radius: 8px;
+  cursor: pointer; white-space: nowrap; transition: background-color .15s ease-out; }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1C3564; }
+.btn-sm { height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-md { height: 44px; padding: 0 18px; font-size: 16px; }
+.btn-outline { background: transparent; color: #1C3564; border-color: #1C3564; }
+.btn-outline:hover { background: #EDF0F4; }
+.btn-secondary { background: #1C3564; color: #fff; }
+.btn-secondary:hover { background: #3D537B; }
+.btn-ghost { background: transparent; color: #1C3564; width: 40px; height: 40px; padding: 0; }
+.btn-ghost:hover { background: #EDF0F4; }
+</style>
+</head>
+<body>
+<div class="section" id="dictSection">
+  <div class="section-head">
+    <svg class="" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <h2 class="section-title">Want to learn about other forms of online abuse?</h2>
+  </div>
+  <div class="section-body">
+    <p>Online abuse can take many forms beyond the three behaviours introduced here. Explore the <strong>Mini Dictionary</strong> for a quick reference to other tactics you may encounter online.</p><p><strong>Reader discretion:</strong> Some entries describe harmful or abusive behaviours that may be sensitive or upsetting. Explore this resource at your own discretion, and return to the course whenever you are ready.</p>
+    <button type="button" class="btn btn-secondary btn-md" id="openDict"><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span>Explore the Mini Dictionary</span></button>
+  </div>
+</div>
+<template id="dialogTpl">
+<style>
+:host { all: initial; }
+* { box-sizing: border-box; }
+.scrim { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  background: rgba(14, 27, 51, .64);
+  font-family: 'Cerebri Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif; color: #091324; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit;
+  font-weight: 700; letter-spacing: .01em; border: 1.5px solid transparent; border-radius: 8px;
+  cursor: pointer; white-space: nowrap; transition: background-color .15s ease-out; }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1C3564; }
+.btn-sm { height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-md { height: 44px; padding: 0 18px; font-size: 16px; }
+.btn-outline { background: transparent; color: #1C3564; border-color: #1C3564; }
+.btn-outline:hover { background: #EDF0F4; }
+.btn-secondary { background: #1C3564; color: #fff; }
+.btn-secondary:hover { background: #3D537B; }
+.btn-ghost { background: transparent; color: #1C3564; width: 40px; height: 40px; padding: 0; }
+.btn-ghost:hover { background: #EDF0F4; }
+
+.dialog { position: relative; width: min(760px, 100%); max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px);
+  display: flex; flex-direction: column; background: #fff; border: 1px solid #DFE3EA; border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(28, 53, 100, .18), 0 2px 6px rgba(28, 53, 100, .08); overflow: hidden; }
+.dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 28px 32px 16px; border-bottom: 1px solid #DFE3EA; }
+.dialog-head .btn-ghost { margin: -6px -12px 0 0; flex: none; }
+.dialog-title { font-size: 22px; line-height: 30px; font-weight: 900; color: #1C3564; margin: 0; }
+.dialog-body { overflow-y: auto; padding: 8px 32px 24px; font-size: 16px; line-height: 26px; color: #091324; }
+.group { border-bottom: 1px solid #DFE3EA; }
+.group summary { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 16px 0;
+  list-style: none; cursor: pointer; font-size: 18px; line-height: 26px; font-weight: 800; color: #1C3564; }
+.group summary::-webkit-details-marker { display: none; }
+.group summary:hover .group-title { text-decoration: underline; text-underline-offset: 4px; }
+.group summary:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1C3564; border-radius: 4px; }
+.group-title { flex: 1; }
+.group-count { flex: none; font-size: 13px; line-height: 20px; font-weight: 700; color: #21b7cb;
+  background: #F3EEF7; border-radius: 999px; padding: 2px 10px; }
+.group summary > svg { flex: none; color: #1C3564; transition: transform .2s ease-out; }
+.group[open] summary > svg { transform: rotate(180deg); }
+.group dl { margin: 0 0 12px; }
+.entry { padding: 10px 0 10px 16px; border-top: 1px solid #EDF0F4; }
+.entry dt { font-weight: 700; color: #1C3564; }
+.entry dd { margin: 2px 0 0; font-size: 15px; line-height: 23px; color: #091324; }
+.dialog-foot { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 32px; border-top: 1px solid #DFE3EA; }
+@media (max-width: 600px) {
+  .scrim { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+  .dialog { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); border-radius: 12px; }
+  .dialog-head { padding: 20px 20px 12px; }
+  .dialog-title { font-size: 20px; line-height: 28px; }
+  .dialog-body { padding: 4px 20px 16px; }
+  .dialog-foot { padding: 12px 20px; }
+  .dialog-foot .btn { width: 100%; }
+}
+</style>
+<div class="scrim">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="uaoaDictTitle">
+    <div class="dialog-head">
+      <div>
+        <h2 class="dialog-title" id="uaoaDictTitle">Other Forms of Online Abuse</h2>
+      </div>
+      <button type="button" class="btn btn-ghost js-close-x" aria-label="Close" title="Close"><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
+    <div class="dialog-body"><details class="group"><summary><span class="group-title">Toxic Content</span><span class="group-count">8 terms</span><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><dl><div class="entry"><dt>Purposeful embarrassment</dt><dd>Intentionally causing someone shame or humiliation, often publicly.</dd></div><div class="entry"><dt>Cyberbullying</dt><dd>Repeated use of electronic communication to intimidate, scare, or shame a person.</dd></div><div class="entry"><dt>Trolling</dt><dd>Posting provocative or offensive messages to trigger strong reactions or disrupt discussion.</dd></div><div class="entry"><dt>Profane or offensive content</dt><dd>Vulgar or disrespectful language, images, or communication.</dd></div><div class="entry"><dt>Threats of violence</dt><dd>Messages meant to create fear of physical harm.</dd></div><div class="entry"><dt>Incitement</dt><dd>Urging others to act violently or unlawfully.</dd></div><div class="entry"><dt>Sexual harassment</dt><dd>Unwanted sexual advances or comments.</dd></div><div class="entry"><dt>Unwanted explicit content</dt><dd>Sharing sexually explicit images or messages without consent.</dd></div></dl></details><details class="group"><summary><span class="group-title">Content Leakage</span><span class="group-count">6 terms</span><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><dl><div class="entry"><dt>Sextortion</dt><dd>Blackmail that threatens to release private material unless demands are met.</dd></div><div class="entry"><dt>Doxxing</dt><dd>Publishing private or identifying information with malicious intent.</dd></div><div class="entry"><dt>Outing</dt><dd>Disclosing someone&#x27;s sexuality or gender identity without permission.</dd></div><div class="entry"><dt>Deadnaming</dt><dd>Using a transgender or non-binary person&#x27;s former name without consent.</dd></div><div class="entry"><dt>Non-consensual image exposure</dt><dd>Sharing private or intimate images or videos without consent.</dd></div><div class="entry"><dt>Leaked chats or profiles</dt><dd>Exposing private conversations or accounts without authorisation.</dd></div></dl></details><details class="group"><summary><span class="group-title">Overloading</span><span class="group-count">3 terms</span><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><dl><div class="entry"><dt>System or account flooding</dt><dd>Overwhelming a person or platform with excessive content or requests to disrupt service or silence speech.</dd></div><div class="entry"><dt>Zoombombing</dt><dd>Uninvited intrusion into a video call to disrupt it.</dd></div><div class="entry"><dt>Negative ratings and reviews</dt><dd>Coordinated unfair or biased feedback meant to damage a reputation.</dd></div></dl></details><details class="group"><summary><span class="group-title">False Reporting</span><span class="group-count">3 terms</span><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><dl><div class="entry"><dt>SWATing</dt><dd>A hoax emergency call meant to trigger an armed police response at someone&#x27;s location.</dd></div><div class="entry"><dt>Falsified abuse report</dt><dd>Knowingly submitting a false report to cause harm.</dd></div><div class="entry"><dt>Falsified abuse flag</dt><dd>Wrongly flagging legitimate content as abusive to have it removed or censored.</dd></div></dl></details><details class="group"><summary><span class="group-title">Impersonation</span><span class="group-count">5 terms</span><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><dl><div class="entry"><dt>Impersonated profiles</dt><dd>Fake accounts created to deceive or defraud.</dd></div><div class="entry"><dt>Impersonated chats or images</dt><dd>Fabricated or altered content falsely attributed to someone.</dd></div><div class="entry"><dt>Synthetic pornography</dt><dd>Deepfake technology used to create explicit content without consent.</dd></div><div class="entry"><dt>Impersonated web pages</dt><dd>Counterfeit sites built to deceive users or harm a competitor&#x27;s standing.</dd></div><div class="entry"><dt>Hijacked communication</dt><dd>Unauthorized takeover of an account or channel to spread false messages.</dd></div></dl></details><details class="group"><summary><span class="group-title">Surveillance</span><span class="group-count">5 terms</span><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><dl><div class="entry"><dt>Stalking or tracking</dt><dd>Repeated, unwanted monitoring of a person&#x27;s movements or activity.</dd></div><div class="entry"><dt>Account monitoring</dt><dd>Unauthorized access to and tracking of someone&#x27;s account activity.</dd></div><div class="entry"><dt>Device monitoring</dt><dd>Unauthorized tracking of activity on a person&#x27;s phone, computer, or tablet.</dd></div><div class="entry"><dt>IoT monitoring</dt><dd>Passive data collection from wearables or smart devices without consent.</dd></div><div class="entry"><dt>Browser monitoring</dt><dd>Tracking someone&#x27;s browsing history or activity without their knowledge.</dd></div></dl></details><details class="group"><summary><span class="group-title">Lockout and Control</span><span class="group-count">3 terms</span><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><dl><div class="entry"><dt>Content deletion</dt><dd>Unauthorized removal of files, posts, or data to suppress information or cause harm.</dd></div><div class="entry"><dt>Browser or device hijacking</dt><dd>Taking control of someone&#x27;s browser or connected devices without consent.</dd></div><div class="entry"><dt>Account lockouts</dt><dd>Deliberately blocking a person from accessing their own accounts or content.</dd></div></dl></details></div>
+    <div class="dialog-foot">
+      <button type="button" class="btn btn-secondary btn-md js-close"><svg class="" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg><span>Back to course</span></button>
+    </div>
+  </div>
+</div>
+</template>
+<script>
+(function() {
+  var openBtn = document.getElementById('openDict');
+  var section = document.getElementById('dictSection');
+  var tpl = document.getElementById('dialogTpl');
+  var mounted = null;
+  var didOpen = false;
+
+  function frame() { try { return window.frameElement; } catch (e) { return null; } }
+
+  /** Walk up to the outermost accessible window (where Course Custom JS lives). */
+  function rootWin() {
+    var w = window;
+    for (var i = 0; i < 6; i++) {
+      try {
+        if (!w.parent || w.parent === w) break;
+        void w.parent.document;
+        w = w.parent;
+      } catch (e) { break; }
+    }
+    return w;
+  }
+
+  function api() {
+    var w = rootWin();
+    w.UAOA = w.UAOA || {};
+    return w.UAOA;
+  }
+
+  function isDocked() {
+    return !!api().__miniDictDocked;
+  }
+
+  function syncHeight() {
+    var f = frame();
+    if (!f) return;
+    if (section && section.hidden) {
+      f.style.setProperty('height', '0px', 'important');
+      f.style.setProperty('min-height', '0', 'important');
+      f.style.setProperty('border', '0', 'important');
+      f.style.setProperty('overflow', 'hidden', 'important');
+      f.style.setProperty('padding', '0', 'important');
+      f.style.setProperty('margin', '0', 'important');
+      return;
+    }
+    f.style.removeProperty('min-height');
+    f.style.removeProperty('overflow');
+    f.style.removeProperty('padding');
+    f.style.removeProperty('margin');
+    f.style.setProperty('height', Math.ceil(document.body.getBoundingClientRect().height) + 'px', 'important');
+  }
+
+  function hideInPage() {
+    if (!section) return;
+    section.hidden = true;
+    document.documentElement.style.cssText = 'margin:0;padding:0;height:0;overflow:hidden;';
+    document.body.style.cssText = 'margin:0;padding:0;height:0;overflow:hidden;';
+    syncHeight();
+  }
+
+  function dictHtml() {
+    return tpl ? tpl.innerHTML : '';
+  }
+
+  function broadcast(type) {
+    var payload = { source: 'uaoa-mini-dictionary', type: type, html: dictHtml() };
+    var rw = rootWin();
+    try { rw.postMessage(payload, '*'); } catch (e) {}
+    try { window.parent && window.parent.postMessage(payload, '*'); } catch (e) {}
+    try { window.top && window.top.postMessage(payload, '*'); } catch (e) {}
+  }
+
+  function dock() {
+    var u = api();
+    var rw = rootWin();
+    u.__miniDictDocked = true;
+    u.__miniDictHtml = dictHtml();
+    try { rw.document.documentElement.setAttribute('data-uaoa-dict-docked', '1'); } catch (e) {}
+    hideInPage();
+    broadcast('dock');
+    if (typeof u.dockMiniDictionary === 'function') u.dockMiniDictionary();
+    else if (typeof u.syncSupportFloater === 'function') u.syncSupportFloater();
+  }
+
+  function hostDocument() {
+    return rootWin().document;
+  }
+
+  function open() {
+    if (mounted) return;
+    didOpen = true;
+    broadcast('open');
+    var doc = hostDocument();
+    var existing = doc.querySelector('[data-uaoa-mini-dictionary]');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    var host = doc.createElement('div');
+    host.setAttribute('data-uaoa-mini-dictionary', '');
+    host.style.cssText = 'position:fixed;inset:0;z-index:2147483647;';
+    var shadow = host.attachShadow ? host.attachShadow({ mode: 'open' }) : host;
+    shadow.appendChild(doc.importNode(tpl.content, true));
+    doc.body.appendChild(host);
+
+    var scrim = shadow.querySelector('.scrim');
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    shadow.querySelector('.js-close-x').addEventListener('click', close);
+    shadow.querySelector('.js-close').addEventListener('click', close);
+    scrim.addEventListener('click', function(e) { if (e.target === scrim) close(); });
+    doc.addEventListener('keydown', onKey);
+
+    mounted = { host: host, doc: doc, onKey: onKey };
+    shadow.querySelector('.js-close').focus();
+  }
+
+  function close() {
+    if (!mounted) return;
+    mounted.doc.removeEventListener('keydown', mounted.onKey);
+    if (mounted.host.parentNode) mounted.host.parentNode.removeChild(mounted.host);
+    mounted = null;
+    // Only dock after the learner actually opened the dictionary, then closed it
+    if (didOpen) {
+      didOpen = false;
+      dock();
+    }
+  }
+
+  function register() {
+    var u = api();
+    var html = dictHtml();
+    u.__miniDictHtml = html;
+    u.__miniDictOpener = open;
+    // Do not overwrite parent's durable openMiniDictionary once floater owns it
+    if (typeof u.registerMiniDictionary === 'function') u.registerMiniDictionary(open, html);
+    else if (typeof u.openMiniDictionary !== 'function') u.openMiniDictionary = open;
+    broadcast('register');
+  }
+
+  register();
+  if (openBtn) openBtn.addEventListener('click', open);
+
+  // Docked pill / parent may ask this iframe to open (fallback)
+  window.addEventListener('message', function (ev) {
+    var data = ev && ev.data;
+    if (!data || data.source !== 'uaoa-mini-dictionary') return;
+    if (data.type === 'open') open();
+  });
+
+  window.addEventListener('pagehide', function () {
+    if (mounted) {
+      try {
+        mounted.doc.removeEventListener('keydown', mounted.onKey);
+        if (mounted.host.parentNode) mounted.host.parentNode.removeChild(mounted.host);
+      } catch (e) {}
+      mounted = null;
+    }
+  });
+
+  if (window.ResizeObserver) new ResizeObserver(syncHeight).observe(document.body);
+  window.addEventListener('load', syncHeight);
+
+  // If already docked earlier in this course session (in-memory on parent), stay docked.
+  // No sessionStorage — a full reload always brings the in-page section back.
+  if (isDocked()) {
+    hideInPage();
+    broadcast('dock');
+    var u = api();
+    if (typeof u.dockMiniDictionary === 'function') u.dockMiniDictionary();
+    else if (typeof u.syncSupportFloater === 'function') u.syncSupportFloater();
+  } else {
+    // Ensure we are not left collapsed from a prior bug
+    if (section) section.hidden = false;
+    syncHeight();
+  }
+})();
+</script>
+</body>
+</html>

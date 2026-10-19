@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support sidebars + modal</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font-family: 'Cerebri Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: #091324; background: #F4F6FA;
+  }
+  .rail {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 220px; z-index: 1;
+    background: #1C3564; color: #fff; padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .rail strong { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+  .rail a { color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; opacity: .9; }
+  .stage { margin-left: 220px; padding: 28px 24px 120px; max-width: 560px; }
+  h1 { margin: 0 0 8px; font-size: 20px; color: #1C3564; }
+  p { margin: 0 0 14px; font-size: 14px; line-height: 22px; color: #5A6A85; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  button {
+    font: inherit; font-weight: 700; font-size: 13px; border-radius: 8px;
+    border: 1.5px solid #1C3564; background: #fff; color: #1C3564;
+    padding: 8px 12px; cursor: pointer;
+  }
+  button.primary { background: #1C3564; color: #fff; }
+  @media (max-width: 700px) {
+    .rail { display: none; }
+    .stage { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+  <aside class="rail" aria-label="Fake course sidebar">
+    <strong>Course nav</strong>
+    <a href="#">About</a>
+    <a href="#">Module 1</a>
+    <a href="#">Module 2</a>
+  </aside>
+  <div class="stage">
+    <h1>Support sidebars + modal</h1>
+    <p>Live <code>docs/course-support-floater.js</code> in a fake course shell. Pills sit bottom-left (aligned to the rail). Use the controls to unlock the Mini Dictionary pill or open the support modal directly.</p>
+    <div class="row">
+      <button type="button" class="primary" id="openSupport">Open support modal</button>
+      <button type="button" id="unlockDict">Unlock Mini Dictionary pill</button>
+      <button type="button" id="resetDict">Reset dictionary unlock</button>
+    </div>
+  </div>
+  <script src="../assets/course-support-floater.js"></script>
+  <script>
+  (function () {
+    function ready(fn) {
+      if (window.UAOA && window.UAOA.openSupport) fn();
+      else setTimeout(function () { ready(fn); }, 50);
+    }
+    ready(function () {
+      document.getElementById('openSupport').addEventListener('click', function () {
+        window.UAOA.openSupport();
+      });
+      document.getElementById('unlockDict').addEventListener('click', function () {
+        try { localStorage.setItem('uaoa-mini-dict-unlocked', '1'); } catch (e) {}
+        if (window.UAOA.dockMiniDictionary) window.UAOA.dockMiniDictionary();
+        else if (window.UAOA.syncSupportFloater) window.UAOA.syncSupportFloater();
+      });
+      document.getElementById('resetDict').addEventListener('click', function () {
+        try {
+          localStorage.removeItem('uaoa-mini-dict-unlocked');
+          localStorage.removeItem('uaoa-mini-dict-html');
+          document.documentElement.removeAttribute('data-uaoa-dict-docked');
+        } catch (e) {}
+        location.reload();
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

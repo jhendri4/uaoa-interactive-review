@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UAOA Microcredential — Interactive review</title>
+<style>
+  :root {
+    --navy: #1C3564; --teal: #21b7cb; --purple: #7C5297;
+    --ink: #091324; --muted: #5A6A85; --line: #E5E7EB;
+    --bg: #F4F6FA;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Cerebri Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: var(--ink); background:
+      radial-gradient(1200px 500px at 10% -10%, rgba(124,82,151,.12), transparent 55%),
+      radial-gradient(900px 420px at 100% 0%, rgba(33,183,203,.14), transparent 50%),
+      var(--bg);
+    min-height: 100vh;
+  }
+  header {
+    position: sticky; top: 0; z-index: 20; backdrop-filter: blur(10px);
+    background: rgba(255,255,255,.9); border-bottom: 1px solid var(--line);
+  }
+  .bar {
+    max-width: 920px; margin: 0 auto; padding: 16px 20px 12px;
+  }
+  .top-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 4px;
+  }
+  .brand {
+    font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--purple); margin: 0 0 4px;
+  }
+  h1 { margin: 0 0 6px; font-size: 26px; line-height: 1.15; color: var(--navy); letter-spacing: -.02em; }
+  .lede { margin: 0 0 10px; color: var(--muted); font-size: 15px; line-height: 22px; max-width: 70ch; }
+  .locale-wrap {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+    flex: none;
+  }
+  .locale-wrap label {
+    font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .locale-wrap select {
+    font: inherit; font-weight: 700; font-size: 14px; color: var(--navy);
+    border: 1.5px solid #D1D5DB; border-radius: 10px; background: #fff;
+    padding: 8px 12px; min-width: 160px; cursor: pointer;
+  }
+  .locale-wrap select:focus-visible {
+    outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--navy);
+  }
+  .sync-note {
+    margin: 0 0 14px; font-size: 13px; line-height: 18px; color: var(--muted);
+  }
+  .sync-note code { font-size: 12px; }
+  .locale-banner {
+    display: none; margin: 0 0 12px; padding: 10px 12px; border-radius: 10px;
+    background: rgba(124,82,151,.1); color: var(--ink); font-size: 13px; line-height: 18px;
+  }
+  .locale-banner.on { display: block; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tab {
+    font: inherit; font-weight: 700; font-size: 14px; border-radius: 999px; padding: 9px 14px;
+    border: 1.5px solid #D1D5DB; background: #fff; color: var(--ink); cursor: pointer;
+  }
+  .tab.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+  /* Match ScormStack Format → Max width → Large (contentMaxWidth: 3 / 920px) */
+  main { max-width: 920px; margin: 0 auto; padding: 22px 20px 64px; }
+  .module { display: none; }
+  .module.on { display: block; }
+  .tool {
+    background: transparent; border: 0; border-radius: 0;
+    padding: 0; margin: 0 0 36px; box-shadow: none;
+  }
+  .tool-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .tool h2 { margin: 0; font-size: 18px; color: var(--navy); }
+  .badge {
+    font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--teal); background: rgba(33,183,203,.12); border-radius: 999px; padding: 6px 10px;
+    align-self: flex-start;
+  }
+  .badge.native { color: var(--purple); background: rgba(124,82,151,.12); }
+  .note { margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 20px; }
+  .tool-progress-wrap {
+    display: none; flex-direction: column; gap: 6px; margin: 0 0 10px;
+  }
+  .tool-progress-wrap.is-on { display: flex; }
+  .tool-progress {
+    align-self: flex-end; font-size: 13px; font-weight: 800;
+    letter-spacing: .02em; color: var(--purple);
+  }
+  .tool-progress.done { color: var(--navy); }
+  .tool-progress-bar {
+    height: 4px; border-radius: 999px; background: #E8ECF3; overflow: hidden;
+  }
+  .tool-progress-bar > i {
+    display: block; height: 100%; width: 0; border-radius: inherit;
+    background: linear-gradient(90deg, var(--purple), var(--teal));
+    transition: width .35s ease-out;
+  }
+  /* Border marks the bounds of the actual course interactive */
+  .tool-frame {
+    border: 2px solid var(--navy); border-radius: 14px;
+    background: #F4F6FA; padding: 16px; overflow: hidden;
+  }
+  iframe {
+    width: 100%; border: 0; border-radius: 0; background: transparent;
+    min-height: 0; display: block; vertical-align: top;
+    overflow: hidden;
+  }
+  footer {
+    max-width: 920px; margin: 0 auto; padding: 0 20px 40px; color: var(--muted); font-size: 13px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="top-row">
+        <div>
+          <p class="brand">UAOA Microcredential</p>
+          <h1>Interactive tools review</h1>
+        </div>
+        <div class="locale-wrap">
+          <label for="localeSelect">Translation</label>
+          <select id="localeSelect" aria-label="Translation locale"></select>
+        </div>
+      </div>
+      <p class="lede">Standalone gallery of course interactives for stakeholder review. Custom widgets and Buttons chrome are copied from <code>scripts/</code> + <code>docs/</code> on each rebuild so this page stays aligned with the ScormStack course.</p>
+      <p class="sync-note">Refresh after course changes: <code>python3 scripts/build_review_gallery.py</code>
+        · with a locale: <code>python3 scripts/build_review_gallery.py --locale es</code></p>
+      <p class="locale-banner" id="localeBanner"></p>
+      <div class="tabs" id="tabs" role="tablist"></div>
+    </div>
+  </header>
+  <main id="main"></main>
+  <footer>
+    Serve this folder locally for best results: <code>cd review && python3 -m http.server 8765</code>
+    then open <code>http://127.0.0.1:8765/</code>. Regenerated by <code>scripts/build_review_gallery.py</code>.
+  </footer>
+<script>
+(function () {
+  var CATALOG = [{"id": "buttons", "label": "Buttons", "tools": [{"name": "Mini Dictionary", "kind": "custom", "note": "Course embed from scripts/mini-dictionary-embed.html — open/close dialog; docks into support floater after use.", "src": "widgets/chrome-mini-dictionary.html", "height": 280}, {"name": "Sensitive content notice + support modal", "kind": "custom", "note": "Course embed from scripts/sensitive-notice-embed.html — callout + “Need to take a break?” opens the white support dialog.", "src": "widgets/chrome-sensitive-notice.html", "height": 220}, {"name": "Support sidebars (floater pills)", "kind": "custom", "note": "Live docs/course-support-floater.js in a fake course shell — break pill always; Mini Dictionary pill after unlock.", "src": "widgets/chrome-support-floater.html", "height": 420}, {"name": "Continue (custom scroll button)", "kind": "custom", "note": "Course scroll-fade Continue with mock siblings — click to unveil following blocks (pin behaviour needs the course player).", "src": "widgets/chrome-scroll-continue.html", "height": 520}]}, {"id": "m1", "label": "Module 1", "tools": [{"name": "Forms of online abuse (flip cards)", "kind": "custom", "note": "Course custom embed — hover flips on first explore (holds 5s); click toggles afterward. Reserved done banner; Large 920px.", "src": "widgets/widget-forms-flips.html", "height": 360}, {"name": "Apply scenarios", "kind": "custom", "note": "Course custom embed — everything inside the border is the interactive.", "src": "widgets/widget-apply-scenarios.html", "height": 520}, {"name": "Matteo cards", "kind": "custom", "note": "Course custom embed — everything inside the border is the interactive.", "src": "widgets/widget-matteo-cards.html", "height": 640}, {"name": "Check your understanding heading", "kind": "custom", "note": "Teal pill section subheading — matches forms-overlap sizing; colors from mock.", "src": "widgets/widget-check-understanding-heading.html", "height": 80}, {"name": "Check your understanding", "kind": "custom", "note": "Course custom embed — everything inside the border is the interactive.", "src": "widgets/widget-knowledge-check.html", "height": 560}, {"name": "Key takeaways", "kind": "custom", "note": "Composed block — Art_turquoise as right-aligned ~40% opacity background behind bullets.", "src": "widgets/widget-key-takeaways.html", "height": 420}]}, {"id": "m2", "label": "Module 2", "tools": [{"name": "Who is affected (flip cards)", "kind": "custom", "note": "Course custom embed — hover/click flips with images; English fallbacks if i18n pack fails.", "src": "widgets/m2-affected-flips.html", "height": 560}, {"name": "Six impacts carousel", "kind": "custom", "note": "Course custom embed — everything inside the border is the interactive.", "src": "widgets/widget-impact-carousel.html", "height": 680}, {"name": "Explore: potential impacts", "kind": "custom", "note": "Course custom embed — multi-select with shared Correct! / Not quite feedback.", "src": "widgets/m2-explore-impacts.html", "height": 620}, {"name": "Check your understanding heading", "kind": "custom", "note": "Teal pill section subheading — shared with Module 1.", "src": "widgets/widget-check-understanding-heading.html", "height": 80}, {"name": "Check your understanding", "kind": "custom", "note": "Course custom embed — everything inside the border is the interactive.", "src": "widgets/widget-m2-knowledge-check.html", "height": 560}, {"name": "Key takeaways", "kind": "custom", "note": "Same shell as Module 1 — Art_turquoise background, teal h2, 3em bullet padding.", "src": "widgets/widget-m2-key-takeaways.html", "height": 420}]}, {"id": "m3", "label": "Module 3", "tools": [{"name": "Platform flip cards", "kind": "custom", "note": "Course custom embed — everything inside the border is the interactive.", "src": "widgets/widget-platform-flips.html", "height": 520}, {"name": "Explore: factors (exactly 3)", "kind": "custom", "note": "Course custom embed — everything inside the border is the interactive.", "src": "widgets/widget-explore-factors.html", "height": 620}, {"name": "Reporting steps checklist", "kind": "native-recreation", "note": "Recreated checklist (ungraded review ticks).", "src": "widgets/m3-reporting-checklist.html", "height": 520}, {"name": "Regional examples (EU / UK / US)", "kind": "custom", "note": "Compact region pills open a modal with regulatory examples; optional; reopen anytime.", "src": "widgets/m3-region-tabs.html", "height": 200}, {"name": "Reporting order (sorting)", "kind": "native-recreation", "note": "Recreated drag-to-order assessment with shared feedback.", "src": "widgets/m3-sorting.html", "height": 520}, {"name": "True / false check", "kind": "native-recreation", "note": "Recreated assessment stack as card deck.", "src": "widgets/m3-true-false.html", "height": 480}, {"name": "Key takeaways", "kind": "custom", "note": "Same shell as Module 1 — Art_turquoise background, teal h2, 3em bullet padding.", "src": "widgets/widget-m3-key-takeaways.html", "height": 460}]}, {"id": "m4", "label": "Module 4", "tools": [{"name": "Legal framework tabs", "kind": "native-recreation", "note": "Recreated from native tabs.", "src": "widgets/m4-law-tabs.html", "height": 640}, {"name": "Legal response limits", "kind": "custom", "src": "widgets/m4-limits-list.html", "height": 520}, {"name": "Regional accordion", "kind": "native-recreation", "note": "Recreated from native accordion.", "src": "widgets/m4-regions-accordion.html", "height": 520}, {"name": "Check your understanding", "kind": "native-recreation", "note": "Recreated assessment stack as consistent card deck.", "src": "widgets/m4-knowledge-check.html", "height": 520}, {"name": "Key takeaways", "kind": "custom", "note": "Same shell as Module 1 — Art_turquoise background, teal h2, 3em bullet padding.", "src": "widgets/widget-m4-key-takeaways.html", "height": 420}]}, {"id": "m5", "label": "Module 5", "tools": [{"name": "Action pathway 1", "kind": "native-recreation", "note": "Recreated from native flow.", "src": "widgets/m5-flow-1.html", "height": 360}, {"name": "Action pathway 2", "kind": "native-recreation", "note": "Recreated from native flow.", "src": "widgets/m5-flow-2.html", "height": 360}, {"name": "Action pathway 3", "kind": "native-recreation", "note": "Recreated from native flow.", "src": "widgets/m5-flow-3.html", "height": 400}, {"name": "Match each scenario to a level", "kind": "custom", "note": "Course custom embed — click Individual / Organisation / Society; reserved canvas; Large 920px.", "src": "widgets/widget-m5-match.html", "height": 520}, {"name": "Key takeaways", "kind": "custom", "note": "Same shell as Module 1 — Art_turquoise background, teal h2, 3em bullet padding.", "src": "widgets/widget-m5-key-takeaways.html", "height": 420}]}, {"id": "summary", "label": "Summary", "tools": [{"name": "Final quiz (3-minute readiness)", "kind": "native-recreation", "note": "Scored card deck — 10 graded + Q11 ungraded; reveal feedback; readiness %. Reserved canvas; Large 920px.", "src": "widgets/summary-final-quiz.html", "height": 560}, {"name": "Further action (not scored)", "kind": "native-recreation", "note": "Recreated closing question.", "src": "widgets/summary-further-action.html", "height": 420}]}];
+  var LOCALES = [{"code": "en", "label": "English"}, {"code": "es", "label": "Español"}];
+  var BUILT_LOCALE = "en";
+  var tabs = document.getElementById('tabs');
+  var main = document.getElementById('main');
+  var localeSelect = document.getElementById('localeSelect');
+  var localeBanner = document.getElementById('localeBanner');
+  var params = new URLSearchParams(window.location.search);
+  var wantLocale = params.get('locale') || BUILT_LOCALE;
+  var startTab = params.get('tab') || '';
+
+  LOCALES.forEach(function (loc) {
+    var opt = document.createElement('option');
+    opt.value = loc.code;
+    opt.textContent = loc.label + ' (' + loc.code + ')';
+    if (loc.code === wantLocale) opt.selected = true;
+    localeSelect.appendChild(opt);
+  });
+
+  if (wantLocale !== BUILT_LOCALE) {
+    localeBanner.className = 'locale-banner on';
+    localeBanner.textContent =
+      'Widgets on this page were built for “' + BUILT_LOCALE + '”. To review “' +
+      wantLocale + '”, run: python3 scripts/build_review_gallery.py --locale ' + wantLocale;
+  }
+
+  localeSelect.addEventListener('change', function () {
+    var next = localeSelect.value;
+    var q = new URLSearchParams(window.location.search);
+    q.set('locale', next);
+    var on = document.querySelector('.tab.on');
+    if (on && on.dataset.tabId) q.set('tab', on.dataset.tabId);
+    window.location.search = q.toString();
+  });
+
+  var startIndex = 0;
+  CATALOG.forEach(function (mod, mi) {
+    if (startTab && mod.id === startTab) startIndex = mi;
+  });
+
+  CATALOG.forEach(function (mod, mi) {
+    var tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'tab' + (mi === startIndex ? ' on' : '');
+    tab.textContent = mod.label;
+    tab.dataset.tabId = mod.id;
+    tab.setAttribute('role', 'tab');
+    tab.addEventListener('click', function () { show(mi); });
+    tabs.appendChild(tab);
+
+    var section = document.createElement('section');
+    section.className = 'module' + (mi === startIndex ? ' on' : '');
+    section.id = 'mod-' + mod.id;
+    mod.tools.forEach(function (tool) {
+      var art = document.createElement('article');
+      art.className = 'tool';
+      var badgeClass = tool.kind === 'native-recreation' ? 'badge native' : 'badge';
+      var badgeLabel = tool.kind === 'native-recreation' ? 'Recreated native' : (tool.kind === 'custom' ? 'Custom widget' : 'Demo');
+      art.innerHTML =
+        '<div class="tool-head"><h2></h2><span class="'+badgeClass+'"></span></div>' +
+        '<p class="note"></p>' +
+        '<div class="tool-progress-wrap">' +
+          '<div class="tool-progress" hidden></div>' +
+          '<div class="tool-progress-bar" hidden aria-hidden="true"><i></i></div>' +
+        '</div>' +
+        '<div class="tool-frame"><iframe title="" loading="lazy"></iframe></div>';
+      art.querySelector('h2').textContent = tool.name;
+      art.querySelector('.badge').textContent = badgeLabel;
+      art.querySelector('.note').textContent = tool.note || '';
+      var iframe = art.querySelector('iframe');
+      // Cache-bust so local previews don't stick on stale iframe widgets (304)
+      iframe.src = tool.src + (tool.src.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
+      iframe.style.height = (tool.height || 420) + 'px';
+      iframe.addEventListener('load', function () {
+        try {
+          var doc = iframe.contentDocument;
+          if (!doc) return;
+          var h = Math.ceil(doc.documentElement.scrollHeight || doc.body.scrollHeight);
+          if (h > 40) iframe.style.height = h + 'px';
+        } catch (e) {}
+      });
+      section.appendChild(art);
+    });
+    main.appendChild(section);
+  });
+
+  function show(i) {
+    document.querySelectorAll('.tab').forEach(function (el, idx) { el.classList.toggle('on', idx === i); });
+    document.querySelectorAll('.module').forEach(function (el, idx) { el.classList.toggle('on', idx === i); });
+    var mod = CATALOG[i];
+    if (mod && history.replaceState) {
+      var q = new URLSearchParams(window.location.search);
+      q.set('tab', mod.id);
+      history.replaceState(null, '', '?' + q.toString());
+    }
+    window.scrollTo({ top: 0, behaviour: 'smooth' });
+  }
+})();
+</script>
+</body>
+</html>

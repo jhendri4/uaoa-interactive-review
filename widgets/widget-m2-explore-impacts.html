@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; color-scheme: light; }
+  body {
+    font-family: 'Cerebri Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: #091324; padding: 4px 2px 8px;
+  }
+  .card {
+    width: 100%; max-width: 920px; margin: 0 auto;
+    background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
+    padding: 24px; box-shadow: 0 1px 2px rgba(28,53,100,.04);
+    display: flex; flex-direction: column;
+  }
+  .prompt { margin: 0 0 14px; font-size: 16px; line-height: 26px; font-weight: 700; color: #1C3564; }
+  .hint { margin: 0 0 12px; font-size: 13px; font-weight: 700; color: #5A6A85; }
+  .feedback {
+    margin-top: 14px; padding: 12px 14px; border-radius: 10px;
+    font-size: 15px; line-height: 24px; color: #091324;
+    opacity: 0; pointer-events: none; flex: none;
+  }
+  .feedback.show { opacity: 1; pointer-events: auto; }
+  .feedback.ok { background: #EEF3FB; color: #03707D; }
+  .feedback.bad { background: #F7F8FA; color: #990000; }
+  .btn {
+    font: inherit; font-weight: 700; font-size: 15px; border-radius: 999px;
+    padding: 12px 22px; cursor: pointer; border: 0;
+  }
+  .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
+  .btn-primary { background: #1C3564; color: #fff; }
+  .btn-primary:hover { background: #152A52; }
+  .btn-primary:disabled { opacity: .4; cursor: default; pointer-events: none; }
+  .btn-ghost {
+    background: transparent; color: #1C3564;
+    border: 1.5px solid #1C3564;
+  }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: left;
+    font: inherit; cursor: pointer; border: 1.5px solid #D1D5DB; border-radius: 12px;
+    padding: 14px 16px; background: #fff; margin: 0 0 10px;
+    transition: border-color .15s, background .15s;
+  }
+  .opt:hover:not(:disabled) { border-color: #21b7cb; }
+  .opt.selected { border-color: #1C3564; background: #EEF3FB; }
+  .opt.correct { border-color: #21B7CB; background: #E6F6F8; color: #03707D; }
+  .opt.wrong { border-color: #F1A01F; background: #fff; color: #D35420; }
+  .opt.wrong .lbl { color: #D35420; }
+  .opt.selected.wrong { border-color: #F1A01F; background: #fff; color: #D35420; }
+  .opt:disabled { cursor: default; }
+  .lbl { font-size: 15px; line-height: 22px; font-weight: 600; }
+  .foot {
+    display: flex; justify-content: space-between; gap: 12px; align-items: center;
+    flex-wrap: wrap; margin-top: auto; flex: none;
+  }
+  .dots { display: flex; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 999px; background: #D1D5DB; }
+  .dot.on { background: #7C5297; width: 22px; }
+  .dot.seen { background: #B7A3C9; }
+
+  .box { flex:none; width:20px; height:20px; margin-top:1px; border:1.5px solid #9AA3B5; border-radius:5px; }
+  .opt.selected .box, .opt.correct .box { background:#1C3564; border-color:#1C3564; }
+  .opt.correct .box { background:#21B7CB; border-color:#21B7CB; }
+  .scenario { background:#F3F4F6; border-radius:12px; padding:16px 18px; font-style:italic; margin:0 0 14px; line-height:26px; }
+</style></head><body>
+<div class="card">
+  <p class="scenario">After receiving repeated abusive messages online, an athlete begins posting on social media less frequently. Their coach notices they seem distracted during training, and they have recently mentioned sleeping poorly and feeling anxious about attending public events.</p>
+  <p class="hint" id="hint" data-i18n="m2.exploreImpacts.ui.hint">Select all that apply, then submit.</p>
+  <div id="options"></div>
+  <div class="foot">
+    <span class="hint" id="count" style="margin:0">0 selected</span>
+    <button type="button" class="btn btn-primary" id="submit" disabled data-i18n="common.submitAnswers">Submit Answers</button>
+  </div>
+  <div class="feedback" id="feedback" role="status"></div>
+</div>
+<!--UAOA_I18N-->
+<script>
+(function(){
+  var t = window.t || function (k, fb) { return fb != null ? fb : k; };
+  if (typeof window.applyDataI18n === 'function') window.applyDataI18n(document);
+
+  function markComplete() {
+    try {
+      if (window.SCORMSTACK && typeof SCORMSTACK.markBlockCompleted === 'function') {
+        SCORMSTACK.markBlockCompleted();
+      }
+    } catch (e) {}
+  }
+
+  var CHOICE_IDS = ['c0','c1','c2','c3','c4','c5'];
+  var CHOICES = CHOICE_IDS.map(function (id) { return t('m2.exploreImpacts.labels.' + id); });
+  // All impacts apply — no incorrect path; submit always shows the same explanation.
+  var OK=t('m2.exploreImpacts.ui.ok');
+  var selected={}, locked=false;
+  var options=document.getElementById('options'), submit=document.getElementById('submit');
+  var feedback=document.getElementById('feedback'), count=document.getElementById('count');
+  function n(){ return Object.keys(selected).filter(function(k){return selected[k];}).length; }
+  function upd(){
+    count.textContent=t('m2.exploreImpacts.ui.count','{n} selected').replace('{n}', n());
+    submit.disabled=locked || n()===0;
+  }
+  CHOICES.forEach(function(text,i){
+    var b=document.createElement('button'); b.type='button'; b.className='opt';
+    b.innerHTML='<span class="box"></span><span class="lbl">'+text+'</span>';
+    b.onclick=function(){
+      if(locked) return;
+      selected[i]=!selected[i]; b.classList.toggle('selected',!!selected[i]); upd();
+    };
+    options.appendChild(b);
+  });
+  function lockFeedback(){
+    feedback.style.minHeight='';
+    feedback.className='feedback show ok'; feedback.innerHTML=OK;
+    var h=feedback.getBoundingClientRect().height;
+    feedback.style.minHeight=Math.ceil(h)+'px';
+    feedback.className='feedback'; feedback.innerHTML='';
+  }
+  submit.onclick=function(){
+    if(locked || n()===0) return;
+    locked=true;
+    var nodes=options.querySelectorAll('.opt');
+    nodes.forEach(function(el){
+      el.classList.remove('selected', 'wrong');
+      el.classList.add('correct');
+      el.disabled=true;
+    });
+    feedback.className='feedback show ok';
+    feedback.innerHTML=OK;
+    submit.disabled=true;
+    submit.textContent=t('common.submitted','Submitted');
+    markComplete();
+  };
+  upd(); lockFeedback();
+  var rt=null; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(lockFeedback,120); });
+})();
+</script></body></html>
