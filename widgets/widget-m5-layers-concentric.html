@@ -461,7 +461,24 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     return { heading: heading || '', html: whyButtonify(html || '') };
   }
 
-  // Split an Individual action body into two slides (2 list items each); Why stays on both
+  // Parse <li><strong>Title.</strong> body…</li> → cell title + body (Layer 2 style)
+  function parseIndivLi(li) {
+    var strong = li.querySelector('strong');
+    var title = '';
+    var rest = '';
+    if (strong) {
+      title = strong.textContent.replace(/\s+/g, ' ').trim().replace(/\.$/, '');
+      var clone = li.cloneNode(true);
+      var s = clone.querySelector('strong');
+      if (s) s.remove();
+      rest = clone.innerHTML.replace(/^\s*[\u00a0]?/, '').trim();
+    } else {
+      title = li.textContent.replace(/\s+/g, ' ').trim();
+    }
+    return { title: title, html: rest ? '<p>' + rest + '</p>' : '' };
+  }
+
+  // Split an Individual action into two slides (2 cells each); Why pinned on both
   function splitIndivAction(step) {
     var wrap = document.createElement('div');
     wrap.innerHTML = step.body || '';
@@ -472,7 +489,8 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       details.remove();
     }
     var ul = wrap.querySelector('ul');
-    var items = ul ? Array.prototype.slice.call(ul.querySelectorAll(':scope > li')) : [];
+    var items = ul ? Array.prototype.slice.call(ul.children) : [];
+    items = items.filter(function (n) { return n.tagName === 'LI'; });
     var leadParts = [];
     Array.prototype.forEach.call(wrap.childNodes, function (n) {
       if (n === ul) return;
@@ -481,18 +499,20 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     });
     var lead = leadParts.join('');
 
-    function bodyFor(slice, withLead) {
-      var list = slice.length
-        ? '<ul>' + slice.map(function (li) { return li.outerHTML; }).join('') + '</ul>'
-        : '';
-      return (withLead ? lead : '') + list + whyHtml;
+    function pagesFor(slice, withLead) {
+      if (!slice.length) return [];
+      var blocks = [];
+      if (withLead && lead) blocks.push(block('', lead));
+      slice.forEach(function (li, j) {
+        var parsed = parseIndivLi(li);
+        var html = parsed.html;
+        if (j === slice.length - 1) html += whyHtml;
+        blocks.push(block(parsed.title, html));
+      });
+      return [page(step.title, blocks)];
     }
 
-    var first = items.slice(0, 2);
-    var second = items.slice(2);
-    var pages = [page(step.title, [block(step.title, bodyFor(first, true))])];
-    if (second.length) pages.push(page(step.title, [block(step.title, bodyFor(second, false))]));
-    return pages;
+    return pagesFor(items.slice(0, 2), true).concat(pagesFor(items.slice(2), false));
   }
 
   // Individual — Overview + each action as two slides (2 bullets each)
