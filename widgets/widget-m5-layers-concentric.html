@@ -375,7 +375,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     ]
   };
 
-  // Society — Overview | Edu+Standards | Research+Policy | Tech+Norms+Closing
+  // Society — Overview | Edu+Standards | Research+Policy | Tech+Norms | Working together
   var LAYER_SOC = {
     meta: t3,
     actions: t3.labels,
@@ -389,11 +389,11 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
         block(f3.s3.title, f3.s3.body),
         block(f3.s4.title, f3.s4.body)
       ]),
-      page(f3.s5.title + ' · ' + f3.s6.title, [
+      page(f3.s5.title + ' & ' + f3.s6.title, [
         block(f3.s5.title, f3.s5.body),
-        block(f3.s6.title, f3.s6.body),
-        block(f3.s7.title, f3.s7.body)
-      ])
+        block(f3.s6.title, f3.s6.body)
+      ]),
+      page(f3.s7.title, [block('', f3.s7.body)])
     ]
   };
 
