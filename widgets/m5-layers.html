@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; background: transparent; color-scheme: light; }
@@ -9,142 +12,291 @@
   }
   .card {
     width: 100%; max-width: 920px; margin: 0 auto;
-    background: #fff; border: 1px solid #E5E7EB; border-radius: 16px;
-    padding: 24px; box-shadow: 0 1px 2px rgba(28,53,100,.04);
+    background: #fff; border: 1.5px solid #D1D5DB; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 1px 2px rgba(28,53,100,.04);
     display: flex; flex-direction: column;
+    height: 560px; min-height: 560px;
   }
-  .prompt {
-    margin: 0 0 16px; font-size: 16px; line-height: 26px; font-weight: 700; color: #1C3564;
+  /* —— Layer tabs —— */
+  .layer-tabs {
+    flex: none;
+    display: flex; align-items: stretch;
+    border-bottom: 1.5px solid #E5E7EB;
+    margin-top: 8px;
   }
-  .tracks {
-    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+  .layer-tab {
+    flex: 1 1 0;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    position: relative;
+    font: inherit; font-weight: 800; font-size: 15px;
+    color: #1C3564; background: #fff; border: 0;
+    padding: 14px 12px; cursor: pointer;
+    transition: background .15s, color .15s;
   }
-  .track {
-    display: flex; flex-direction: column; gap: 12px; text-align: left;
-    font: inherit; cursor: pointer;
-    border: 1.5px solid #D1D5DB; border-radius: 14px;
-    padding: 18px 16px; background: #fff; color: #091324;
-    transition: border-color .15s, background .15s, box-shadow .15s;
-    min-height: 100%;
-  }
-  .track:hover { border-color: #21b7cb; }
-  .track:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
-  .track.is-seen {
-    border-color: #C9B6D9; background: #FBF8FD;
-  }
-  .track-num {
-    width: 32px; height: 32px; border-radius: 999px;
+  .layer-tab:focus-visible { outline: none; box-shadow: inset 0 0 0 2px #7C5297; }
+  .layer-num {
+    flex: none; width: 26px; height: 26px; border-radius: 999px;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 800; color: #fff; background: #1C3564;
+    font-size: 13px; font-weight: 800; color: #fff; background: #1C3564;
   }
-  .track.is-seen .track-num { background: #7C5297; }
-  .track-title {
-    margin: 0; font-size: 18px; line-height: 24px; font-weight: 800; color: #1C3564;
+  .layer-tab .chev {
+    position: absolute; right: -7px; top: 50%;
+    transform: translateY(-50%);
+    width: 14px; height: 14px; color: #C5CAD6;
+    z-index: 1; pointer-events: none;
   }
-  .track-labels {
-    display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none;
-  }
-  .track-labels li {
-    font-size: 13px; line-height: 18px; font-weight: 600; color: #5A6A85;
-    padding: 6px 10px; border-radius: 8px; background: #F7F8FA;
-  }
-  .done-banner {
-    margin-top: 14px; padding: 12px 14px; border-radius: 10px;
-    background: #EEF3FB; font-weight: 700; color: #1C3564; font-size: 14px;
-    opacity: 0; pointer-events: none;
-  }
-  .done-banner.show { opacity: 1; }
+  .layer-tab:last-child .chev { display: none; }
 
-  .layer-view[hidden], .home-view[hidden] { display: none !important; }
-  .eyebrow {
-    margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .06em;
-    text-transform: uppercase; color: #21b7cb;
+  /* Light → dark purple distinction across layers; active = outline, not shade */
+  .layer-tab--1 { background: #F7F2FA; }
+  .layer-tab--1:hover { background: #EFE6F5; }
+  .layer-tab--1.is-on {
+    background: #F7F2FA; color: #4A2F63;
+    box-shadow: inset 0 0 0 2px #B08CC4;
+    z-index: 1;
   }
-  .layer-title {
-    margin: 0 0 14px; font-size: 22px; line-height: 28px; font-weight: 800; color: #1C3564;
+  .layer-tab--1 .layer-num { background: #B08CC4; }
+
+  .layer-tab--2 { background: #EEE4F4; }
+  .layer-tab--2:hover { background: #E4D6EF; }
+  .layer-tab--2.is-on {
+    background: #EEE4F4; color: #3F2756;
+    box-shadow: inset 0 0 0 2px #7C5297;
+    z-index: 1;
+  }
+  .layer-tab--2 .layer-num { background: #7C5297; }
+
+  .layer-tab--3 { background: #E2D2EC; }
+  .layer-tab--3:hover { background: #D6C2E4; }
+  .layer-tab--3.is-on {
+    background: #E2D2EC; color: #2F1C42;
+    box-shadow: inset 0 0 0 2px #5C3A78;
+    z-index: 1;
+  }
+  .layer-tab--3 .layer-num { background: #5C3A78; }
+  .layer-tab.is-done::after {
+    content: '';
+    position: absolute; top: 8px; right: 10px;
+    width: 7px; height: 7px; border-radius: 999px; background: #21B7CB;
+  }
+
+  /* —— Layer 2 action labels (not selectable) —— */
+  .action-bar {
+    flex: none;
+    display: none;
+    flex-wrap: wrap; align-items: center; gap: 6px 4px;
+    padding: 10px 14px;
+    background: #F7F8FA;
+    border-bottom: 1.5px solid #E5E7EB;
+  }
+  .action-bar.is-show { display: flex; }
+  .action-chip {
+    font-size: 12px; font-weight: 700; color: #5A6A85;
+    background: #fff; border: 1px solid #E5E7EB;
+    border-radius: 999px; padding: 5px 10px;
+    pointer-events: none; user-select: none;
+  }
+  .action-sep {
+    color: #C5CAD6; font-size: 12px; font-weight: 700; padding: 0 2px;
+    pointer-events: none;
+  }
+
+  /* —— Page canvas —— */
+  .canvas {
+    flex: 1 1 auto;
+    display: flex; flex-direction: column;
+    padding: 18px 20px 16px;
+    min-height: 0;
+  }
+  .placeholder {
+    margin: auto; text-align: center;
+    font-size: 14px; line-height: 22px; font-weight: 600; color: #95A0B6;
+    max-width: 36ch;
+  }
+  .placeholder[hidden], .page-view[hidden] { display: none !important; }
+
+  .page-view {
+    flex: 1 1 auto;
+    display: flex; flex-direction: column;
+    min-height: 0;
   }
   .stage {
-    background: #F7F8FA; border-radius: 12px; padding: 18px;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex; flex-direction: column;
+    background: #F7F8FA; border-radius: 12px;
+    font-size: 15px; line-height: 24px; color: #091324;
+    overflow: hidden;
   }
-  .step-title {
-    margin: 0 0 10px; font-size: 16px; line-height: 24px; font-weight: 800; color: #1C3564;
+  .stage-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 18px 18px 12px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  .stage p, .stage li { font-size: 15px; line-height: 24px; color: #091324; }
+  .stage-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  .stage-why {
+    flex: none;
+    display: none;
+    padding: 0 18px 14px;
+    border-top: 1px solid #E5E7EB;
+    background: #F7F8FA;
+  }
+  .stage-why.has-why { display: block; padding-top: 12px; }
+  /* Primary headers (Protect yourself; Prepare / Protect on L2) — navy */
+  .action-head {
+    margin: 0 0 14px;
+    font-size: 17px; line-height: 24px; font-weight: 800; color: #1C3564;
+  }
+  .action-head + h3 { margin-top: 2px; }
+  /* Cell titles — indented; navy when primary (L2/L3), ink when under action-head */
+  .stage h3 {
+    margin: 0 0 6px 12px; font-size: 15px; line-height: 22px; font-weight: 800; color: #1C3564;
+  }
+  .stage-scroll.has-action-head h3 { color: #091324; }
+  .stage h3 + .block { margin: 0 0 16px 12px; }
+  .stage .block + h3 { margin-top: 4px; padding-top: 14px; border-top: 1px solid #E5E7EB; }
+  /* Body copy always Off-black */
+  .stage { color: #091324; }
+  .stage p,
+  .stage li,
+  .stage .block,
+  .stage .block p,
+  .stage .block li,
+  .stage .block strong { color: #091324; }
   .stage p { margin: 0 0 10px; }
   .stage p:last-child { margin-bottom: 0; }
-  .stage ul { margin: 0 0 0 1.2em; padding: 0; }
-  .stage details { margin-top: 12px; }
-  .stage summary { cursor: pointer; font-weight: 800; color: #1C3564; }
-  .stage strong { color: #1C3564; font-weight: 800; }
+  .stage ul { margin: 0 0 0 1.15em; padding: 0; }
+  .stage li { margin: 0 0 8px; }
+  .stage strong { color: #091324; font-weight: 800; }
 
-  .pill-row {
-    display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px;
+  .why-wrap { position: relative; display: inline-block; margin: 0; }
+  .why-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    font: inherit; font-weight: 800; font-size: 12px;
+    color: #1C3564; background: #fff;
+    border: 1.5px solid #1C3564; border-radius: 8px;
+    padding: 6px 12px; cursor: pointer;
+    min-width: 140px;
+    line-height: 1.2;
   }
-  .pill {
-    font: inherit; font-weight: 700; font-size: 13px;
-    color: #1C3564; background: #fff; border: 1.5px solid #D1D5DB;
-    border-radius: 999px; padding: 8px 12px; cursor: pointer;
+  .why-btn:hover { background: #EEF3FB; }
+  .why-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
+  .why-btn[aria-expanded="true"] { background: #1C3564; color: #fff; }
+  .why-src { display: none !important; }
+
+  .why-pop {
+    position: fixed;
+    z-index: 80;
+    display: none;
+    width: min(360px, calc(100vw - 20px));
+    max-height: min(240px, calc(100vh - 20px));
+    overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 14px 40px 14px 14px;
+    background: #fff;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 12px;
+    box-shadow: 0 10px 32px rgba(15, 21, 36, 0.2), 0 2px 6px rgba(15, 21, 36, 0.08);
+    font-size: 14px; line-height: 22px; color: #091324;
   }
-  .pill:hover { border-color: #21b7cb; }
-  .pill:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
-  .pill.is-on { border-color: #1C3564; background: #1C3564; color: #fff; }
-  .pill.is-seen:not(.is-on) { border-color: #C9B6D9; background: #F3ECF7; }
+  .why-pop.is-open { display: block; }
+  .why-pop::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  .why-pop p { margin: 0; }
+  .why-pop-close {
+    position: absolute; top: 6px; right: 6px;
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font: inherit; font-size: 18px; font-weight: 700; line-height: 1;
+    color: #5A6A85; background: transparent; border: 0; border-radius: 8px;
+    cursor: pointer; padding: 0;
+  }
+  .why-pop-close:hover { background: #F7F8FA; color: #0F1524; }
+  .why-pop-close:focus-visible { outline: none; box-shadow: 0 0 0 2px #7C5297; }
 
   .foot {
+    flex: none;
     display: flex; justify-content: space-between; gap: 12px; align-items: center;
     flex-wrap: wrap; margin-top: 14px;
+    min-height: 48px;
   }
   .series {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 8px;
     font-size: 13px; font-weight: 800; color: #1C3564; font-variant-numeric: tabular-nums;
   }
-  .dots { display: flex; gap: 8px; }
+  .series-arrow {
+    flex: none;
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font: inherit; color: #1C3564; background: #fff;
+    border: 1.5px solid #D1D5DB; border-radius: 999px;
+    padding: 0; cursor: pointer;
+  }
+  .series-arrow:hover { background: #EEF3FB; border-color: #1C3564; }
+  .series-arrow:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
+  .series-arrow:disabled { opacity: .35; cursor: default; pointer-events: none; }
+  .series-arrow svg { width: 14px; height: 14px; display: block; }
+  .dots { display: flex; gap: 8px; align-items: center; }
   .dot { width: 8px; height: 8px; border-radius: 999px; background: #D1D5DB; }
   .dot.on { background: #7C5297; width: 22px; }
   .dot.seen { background: #B7A3C9; }
-  .foot-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+  .foot-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; align-items: center; }
   .btn {
     font: inherit; font-weight: 700; font-size: 15px; border-radius: 999px;
     padding: 12px 22px; cursor: pointer; border: 0;
+    min-height: 46px; line-height: 1.2;
   }
+  #nextBtn { min-width: 10.5em; }
   .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
   .btn-primary { background: #1C3564; color: #fff; }
   .btn-primary:hover { background: #152A52; }
-  .btn-ghost {
-    background: #fff; color: #1C3564; border: 1.5px solid #1C3564;
-  }
+  .btn-advance { background: #F1A01F; color: #0F1524; }
+  .btn-advance:hover { background: #E09010; }
+  .btn-ghost { background: #fff; color: #1C3564; border: 1.5px solid #1C3564; }
   .btn-ghost:hover { background: #EEF3FB; }
   .btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
 
-  @media (max-width: 720px) {
-    .tracks { grid-template-columns: 1fr; }
-    .layer-title { font-size: 20px; line-height: 26px; }
+  @media (max-width: 640px) {
+    .layer-tab { font-size: 13px; padding: 12px 8px; }
+    .layer-tab .chev { display: none; }
   }
-</style></head><body>
+</style>
+</head>
+<body>
 <div class="card" id="root">
-  <div class="home-view" id="homeView">
-    <p class="prompt" data-i18n="m5.layers.ui.prompt">Explore the three layers of action.</p>
-    <div class="tracks" id="tracks" role="group" data-i18n-aria="m5.layers.ui.tracksAria" aria-label="Action layers"></div>
-    <div class="done-banner" id="doneBanner" data-i18n="m5.layers.ui.done">All three layers explored</div>
-  </div>
+  <div class="layer-tabs" id="layerTabs" role="tablist" aria-label="Action layers"></div>
+  <div class="action-bar" id="actionBar" aria-hidden="true"></div>
 
-  <div class="layer-view" id="layerView" hidden>
-    <p class="eyebrow" id="layerEyebrow"></p>
-    <h2 class="layer-title" id="layerTitle"></h2>
-    <div class="pill-row" id="pillRow" role="tablist"></div>
-    <div class="stage" id="stage"></div>
-    <div class="foot">
-      <div class="series" aria-live="polite" aria-atomic="true">
-        <span class="series-n" id="seriesN">1</span>
-        <div class="dots" id="dots"></div>
-        <span class="series-total" id="seriesTotal">1</span>
-      </div>
-      <div class="foot-actions">
-        <button type="button" class="btn btn-ghost" id="prevBtn" data-i18n="common.previous">Previous</button>
-        <button type="button" class="btn btn-primary" id="nextBtn" data-i18n="common.next">Next</button>
+  <div class="canvas">
+    <p class="placeholder" id="placeholder">Select a layer to explore how action works at that level.</p>
+    <div class="page-view" id="pageView" hidden>
+      <div class="stage" id="stage"></div>
+      <div class="foot">
+        <div class="series" aria-live="polite" aria-atomic="true">
+          <button type="button" class="series-arrow" id="seriesPrev" aria-label="Previous slide">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M12.7 4.3a1 1 0 0 1 0 1.4L8.4 10l4.3 4.3a1 1 0 1 1-1.4 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.4 0z"/></svg>
+          </button>
+          <span id="seriesN">1</span>
+          <div class="dots" id="dots"></div>
+          <span id="seriesTotal">1</span>
+          <button type="button" class="series-arrow" id="seriesNext" aria-label="Next slide">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M7.3 4.3a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 1 1-1.4-1.4L11.6 10 7.3 5.7a1 1 0 0 1 0-1.4z"/></svg>
+          </button>
+        </div>
+        <div class="foot-actions">
+          <button type="button" class="btn btn-ghost" id="prevBtn" data-i18n="common.previous">Previous</button>
+          <button type="button" class="btn btn-primary" id="nextBtn" data-i18n="common.next">Next</button>
+        </div>
       </div>
     </div>
   </div>
+</div>
+<div class="why-pop" id="whyPop" role="dialog" aria-modal="false" aria-label="Why does this matter?" hidden>
+  <button type="button" class="why-pop-close" id="whyPopClose" aria-label="Close">×</button>
+  <div class="why-pop-body" id="whyPopBody"></div>
 </div>
 <!--UAOA_I18N-->
 <script>
@@ -244,40 +396,37 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       window.__uaoaInteractiveComplete = true;
       window.__uaoaAwaitComplete = false;
       try {
-        var __uaoaAf2 = window.frameElement;
-        if (__uaoaAf2) {
-          __uaoaAf2.setAttribute('data-uaoa-complete', '1');
-          __uaoaAf2.removeAttribute('data-uaoa-await');
+        var af = window.frameElement;
+        if (af) {
+          af.setAttribute('data-uaoa-complete', '1');
+          af.removeAttribute('data-uaoa-await');
         }
-      } catch (__uaoaAe2) {}
-      var __uaoaFrame = window.frameElement;
-      if (__uaoaFrame && __uaoaFrame.ownerDocument) {
-        __uaoaFrame.ownerDocument.dispatchEvent(new CustomEvent('uaoa-interactive-completed', {
-          bubbles: true,
-          detail: { frame: __uaoaFrame }
+      } catch (e2) {}
+      var fr = window.frameElement;
+      if (fr && fr.ownerDocument) {
+        fr.ownerDocument.dispatchEvent(new CustomEvent('uaoa-interactive-completed', {
+          bubbles: true, detail: { frame: fr }
         }));
       }
-    } catch (__uaoaE2) {}
+    } catch (e3) {}
   }
 
   function syncHeight() {
     try {
       var f = window.frameElement;
       if (f) {
-        f.style.setProperty('height', Math.ceil(document.documentElement.scrollHeight) + 'px', 'important');
+        f.style.setProperty('height', Math.ceil(document.body.getBoundingClientRect().height + 4) + 'px', 'important');
         f.style.setProperty('border', '0', 'important');
       }
     } catch (e) {}
   }
 
-  function loadSteps(flowKey, ids) {
-    return ids.map(function (id) {
-      var base = 'm5.' + flowKey + '.steps.' + id;
-      return { title: t(base + '.title', id), body: t(base + '.body', '') };
-    });
+  function step(flow, id) {
+    var base = 'm5.' + flow + '.steps.' + id;
+    return { title: t(base + '.title', id), body: t(base + '.body', '') };
   }
 
-  function loadTrack(id, flowKey, stepIds) {
+  function track(id) {
     var base = 'm5.layers.tracks.' + id;
     var labels = [];
     for (var n = 1; n <= 3; n++) labels.push(t(base + '.labels.l' + n, ''));
@@ -286,205 +435,434 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       num: t(base + '.num', id.slice(1)),
       title: t(base + '.title', id),
       eyebrow: t(base + '.eyebrow', ''),
-      labels: labels.filter(Boolean),
       intro: t(base + '.intro', ''),
-      steps: loadSteps(flowKey, stepIds)
+      labels: labels.filter(Boolean)
     };
   }
 
-  var LAYERS = [
-    loadTrack('t1', 'flow1', ['s1', 's2', 's3']),
-    loadTrack('t2', 'flow2', ['s1', 's2', 's3', 's4', 's5']),
-    loadTrack('t3', 'flow3', ['s1', 's2', 's3', 's4', 's5', 's6', 's7'])
-  ];
+  // Convert <details><summary>Why…</summary>…</details> → button + hidden source for popover
+  function whyButtonify(html) {
+    var wrap = document.createElement('div');
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('details').forEach(function (det) {
+      var sum = det.querySelector('summary');
+      var label = sum ? sum.textContent.replace(/\s+/g, ' ').trim() : 'Why does this matter?';
+      var bodyHtml = '';
+      Array.prototype.forEach.call(det.childNodes, function (n) {
+        if (n === sum) return;
+        if (n.nodeType === 1) bodyHtml += n.outerHTML;
+        else if (n.nodeType === 3 && n.textContent.trim()) bodyHtml += '<p>' + n.textContent.trim() + '</p>';
+      });
+      var box = document.createElement('div');
+      box.className = 'why-wrap';
+      box.innerHTML =
+        '<button type="button" class="why-btn" aria-expanded="false" aria-haspopup="dialog"></button>' +
+        '<div class="why-src"></div>';
+      box.querySelector('.why-btn').textContent = label;
+      box.querySelector('.why-src').innerHTML = bodyHtml || '<p></p>';
+      det.replaceWith(box);
+    });
+    return wrap.innerHTML;
+  }
 
-  var homeView = document.getElementById('homeView');
-  var layerView = document.getElementById('layerView');
-  var tracksEl = document.getElementById('tracks');
-  var doneBanner = document.getElementById('doneBanner');
-  var layerEyebrow = document.getElementById('layerEyebrow');
-  var layerTitle = document.getElementById('layerTitle');
-  var pillRow = document.getElementById('pillRow');
+  var whyPop = document.getElementById('whyPop');
+  var whyPopBody = document.getElementById('whyPopBody');
+  var whyPopClose = document.getElementById('whyPopClose');
+  var openWhyBtn = null;
+
+  function closeWhyPop() {
+    if (!whyPop.classList.contains('is-open') && whyPop.hidden) return;
+    whyPop.classList.remove('is-open');
+    whyPop.hidden = true;
+    if (openWhyBtn) {
+      openWhyBtn.setAttribute('aria-expanded', 'false');
+      openWhyBtn = null;
+    }
+  }
+
+  function positionWhyPop(btn) {
+    var br = btn.getBoundingClientRect();
+    var gap = 8;
+    whyPop.style.left = '0px';
+    whyPop.style.top = '0px';
+    var pw = whyPop.offsetWidth;
+    var ph = whyPop.offsetHeight;
+    var left = br.left;
+    var top = br.top - ph - gap;
+    if (top < 8) top = br.bottom + gap;
+    left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+    if (top + ph > window.innerHeight - 8) top = Math.max(8, window.innerHeight - ph - 8);
+    whyPop.style.left = Math.round(left) + 'px';
+    whyPop.style.top = Math.round(top) + 'px';
+  }
+
+  function openWhyPop(btn) {
+    var src = btn.parentElement && btn.parentElement.querySelector('.why-src');
+    if (!src) return;
+    if (openWhyBtn === btn) {
+      closeWhyPop();
+      return;
+    }
+    closeWhyPop();
+    openWhyBtn = btn;
+    btn.setAttribute('aria-expanded', 'true');
+    whyPopBody.innerHTML = src.innerHTML;
+    whyPop.hidden = false;
+    whyPop.classList.add('is-open');
+    positionWhyPop(btn);
+  }
+
+  function bindWhy(root) {
+    root.querySelectorAll('.why-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        openWhyPop(btn);
+      });
+    });
+  }
+
+  whyPopClose.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var prev = openWhyBtn;
+    closeWhyPop();
+    if (prev) prev.focus();
+  });
+  document.addEventListener('click', function (e) {
+    if (!whyPop.classList.contains('is-open')) return;
+    if (whyPop.contains(e.target)) return;
+    if (openWhyBtn && openWhyBtn.contains(e.target)) return;
+    closeWhyPop();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeWhyPop();
+  });
+  window.addEventListener('resize', function () {
+    if (openWhyBtn) positionWhyPop(openWhyBtn);
+  });
+
+  var t1 = track('t1');
+  var t2 = track('t2');
+  var t3 = track('t3');
+  var f1 = { s1: step('flow1', 's1'), s2: step('flow1', 's2'), s3: step('flow1', 's3') };
+  var f2 = { s1: step('flow2', 's1'), s2: step('flow2', 's2'), s3: step('flow2', 's3'), s4: step('flow2', 's4'), s5: step('flow2', 's5') };
+  var f3 = { s1: step('flow3', 's1'), s2: step('flow3', 's2'), s3: step('flow3', 's3'), s4: step('flow3', 's4'), s5: step('flow3', 's5'), s6: step('flow3', 's6'), s7: step('flow3', 's7') };
+
+  function page(title, blocks, actionHead) {
+    return { title: title, blocks: blocks, actionHead: actionHead || '' };
+  }
+  function block(heading, html) {
+    return { heading: heading || '', html: whyButtonify(html || '') };
+  }
+
+  // Parse <li><strong>Title.</strong> body…</li> → cell title + body (Layer 2 style)
+  function parseIndivLi(li) {
+    var strong = li.querySelector('strong');
+    var title = '';
+    var rest = '';
+    if (strong) {
+      title = strong.textContent.replace(/\s+/g, ' ').trim().replace(/\.$/, '');
+      var clone = li.cloneNode(true);
+      var s = clone.querySelector('strong');
+      if (s) s.remove();
+      rest = clone.innerHTML.replace(/^\s*[\u00a0]?/, '').trim();
+    } else {
+      title = li.textContent.replace(/\s+/g, ' ').trim();
+    }
+    return { title: title, html: rest ? '<p>' + rest + '</p>' : '' };
+  }
+
+  // Split an Individual action into two slides (2 cells each); Why pinned on both
+  function splitIndivAction(step) {
+    var wrap = document.createElement('div');
+    wrap.innerHTML = step.body || '';
+    var details = wrap.querySelector('details');
+    var whyHtml = '';
+    if (details) {
+      whyHtml = details.outerHTML;
+      details.remove();
+    }
+    var ul = wrap.querySelector('ul');
+    var items = ul ? Array.prototype.slice.call(ul.children) : [];
+    items = items.filter(function (n) { return n.tagName === 'LI'; });
+    var leadParts = [];
+    Array.prototype.forEach.call(wrap.childNodes, function (n) {
+      if (n === ul) return;
+      if (n.nodeType === 1) leadParts.push(n.outerHTML);
+      else if (n.nodeType === 3 && n.textContent.trim()) leadParts.push('<p>' + n.textContent.trim() + '</p>');
+    });
+    var lead = leadParts.join('');
+
+    function pagesFor(slice, withLead) {
+      if (!slice.length) return [];
+      var blocks = [];
+      if (withLead && lead) blocks.push(block('', lead));
+      slice.forEach(function (li, j) {
+        var parsed = parseIndivLi(li);
+        var html = parsed.html;
+        if (j === slice.length - 1) html += whyHtml;
+        blocks.push(block(parsed.title, html));
+      });
+      return [page(step.title, blocks, step.title)];
+    }
+
+    return pagesFor(items.slice(0, 2), true).concat(pagesFor(items.slice(2), false));
+  }
+
+  // Individual — Overview + each action as two slides (2 bullets each)
+  var LAYER_INDIV = {
+    meta: t1,
+    actions: t1.labels,
+    pages: [page(t('m5.layers.ui.overview', 'Overview'), [block('', t1.intro)])]
+      .concat(splitIndivAction(f1.s1))
+      .concat(splitIndivAction(f1.s2))
+      .concat(splitIndivAction(f1.s3))
+  };
+
+  // Organisations — Overview | Prepare+Protect | Respond+Connect | Closing
+  var LAYER_ORG = {
+    meta: t2,
+    actions: t2.labels,
+    pages: [
+      page(t('m5.layers.ui.overview', 'Overview'), [block('', t2.intro)]),
+      page(f2.s1.title + ' & ' + f2.s2.title, [
+        block(f2.s1.title, f2.s1.body),
+        block(f2.s2.title, f2.s2.body)
+      ]),
+      page(f2.s3.title + ' & ' + f2.s4.title, [
+        block(f2.s3.title, f2.s3.body),
+        block(f2.s4.title, f2.s4.body)
+      ]),
+      page(f2.s5.title, [block('', f2.s5.body)])
+    ]
+  };
+
+  // Society — Overview | Edu+Standards | Research+Policy | Tech+Norms | Working together
+  var LAYER_SOC = {
+    meta: t3,
+    actions: t3.labels,
+    pages: [
+      page(t('m5.layers.ui.overview', 'Overview'), [block('', t3.intro)]),
+      page(f3.s1.title + ' & ' + f3.s2.title, [
+        block(f3.s1.title, f3.s1.body),
+        block(f3.s2.title, f3.s2.body)
+      ]),
+      page(f3.s3.title + ' & ' + f3.s4.title, [
+        block(f3.s3.title, f3.s3.body),
+        block(f3.s4.title, f3.s4.body)
+      ]),
+      page(f3.s5.title + ' & ' + f3.s6.title, [
+        block(f3.s5.title, f3.s5.body),
+        block(f3.s6.title, f3.s6.body)
+      ]),
+      page(f3.s7.title, [block('', f3.s7.body)])
+    ]
+  };
+
+  var LAYERS = [LAYER_INDIV, LAYER_ORG, LAYER_SOC];
+
+  var CHEV = '<svg class="chev" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M7.3 4.3a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 1 1-1.4-1.4L11.6 10 7.3 5.7a1 1 0 0 1 0-1.4z"/></svg>';
+
+  var layerTabs = document.getElementById('layerTabs');
+  var actionBar = document.getElementById('actionBar');
+  var placeholder = document.getElementById('placeholder');
+  var pageView = document.getElementById('pageView');
   var stage = document.getElementById('stage');
   var seriesN = document.getElementById('seriesN');
   var seriesTotal = document.getElementById('seriesTotal');
   var dots = document.getElementById('dots');
+  var seriesPrev = document.getElementById('seriesPrev');
+  var seriesNext = document.getElementById('seriesNext');
   var prevBtn = document.getElementById('prevBtn');
   var nextBtn = document.getElementById('nextBtn');
 
   var activeLayer = -1;
-  var stepIndex = 0; // 0 = intro, 1..n = steps
-  var seenSteps = {}; // layerId -> { stepKey: true }
+  var pageIndex = 0;
+  var tabBtns = [];
+  var seenPages = {}; // layerIndex -> { pageIndex: true }
   var finishedOnce = false;
-  var trackButtons = [];
 
-  function screenCount(layer) {
-    return 1 + layer.steps.length; // intro + steps
+  function markPageSeen(layerIdx, pageIdx) {
+    if (!seenPages[layerIdx]) seenPages[layerIdx] = {};
+    seenPages[layerIdx][pageIdx] = true;
   }
-
-  function ensureSeen(layerId) {
-    if (!seenSteps[layerId]) seenSteps[layerId] = {};
-    return seenSteps[layerId];
-  }
-
-  function markScreenSeen(layerId, idx) {
-    ensureSeen(layerId)[String(idx)] = true;
-  }
-
-  function layerComplete(layer) {
-    var seen = ensureSeen(layer.id);
-    var total = screenCount(layer);
-    for (var i = 0; i < total; i++) {
-      if (!seen[String(i)]) return false;
+  function layerFullySeen(layerIdx) {
+    var layer = LAYERS[layerIdx];
+    var seen = seenPages[layerIdx] || {};
+    for (var i = 0; i < layer.pages.length; i++) {
+      if (!seen[i]) return false;
     }
     return true;
   }
-
-  function allLayersComplete() {
-    return LAYERS.every(layerComplete);
+  function allLayersFullySeen() {
+    for (var i = 0; i < LAYERS.length; i++) {
+      if (!layerFullySeen(i)) return false;
+    }
+    return true;
   }
-
-  function paintHome() {
-    trackButtons.forEach(function (btn, i) {
-      btn.classList.toggle('is-seen', layerComplete(LAYERS[i]));
+  function refreshTabDoneState() {
+    tabBtns.forEach(function (b, idx) {
+      b.classList.toggle('is-done', layerFullySeen(idx));
     });
-    doneBanner.classList.toggle('show', allLayersComplete());
-    if (allLayersComplete() && !finishedOnce) {
+  }
+  function maybeComplete() {
+    refreshTabDoneState();
+    if (allLayersFullySeen() && !finishedOnce) {
       finishedOnce = true;
       markComplete();
     }
-    syncHeight();
   }
 
-  function showHome() {
-    activeLayer = -1;
-    homeView.hidden = false;
-    layerView.hidden = true;
-    paintHome();
+  function renderActionBar(layer) {
+    actionBar.innerHTML = '';
+    layer.actions.forEach(function (label, i) {
+      if (i) {
+        var sep = document.createElement('span');
+        sep.className = 'action-sep';
+        sep.textContent = '|';
+        actionBar.appendChild(sep);
+      }
+      var chip = document.createElement('span');
+      chip.className = 'action-chip';
+      chip.textContent = label;
+      actionBar.appendChild(chip);
+    });
+    actionBar.classList.add('is-show');
+    actionBar.setAttribute('aria-hidden', 'false');
   }
 
-  function renderStage(layer) {
-    if (stepIndex === 0) {
-      stage.innerHTML = '<div class="body">' + layer.intro + '</div>';
+  function renderStage(page) {
+    var scrollHtml = page.actionHead ? '<p class="action-head"></p>' : '';
+    page.blocks.forEach(function (b) {
+      if (b.heading) scrollHtml += '<h3></h3>';
+      scrollHtml += '<div class="block"></div>';
+    });
+    stage.innerHTML = '<div class="stage-scroll"></div><div class="stage-why"></div>';
+    var scroll = stage.querySelector('.stage-scroll');
+    var whyBar = stage.querySelector('.stage-why');
+    scroll.innerHTML = scrollHtml;
+    if (page.actionHead) {
+      scroll.classList.add('has-action-head');
+      scroll.querySelector('.action-head').textContent = page.actionHead;
+    }
+    var headings = scroll.querySelectorAll('h3');
+    var blocks = scroll.querySelectorAll('.block');
+    var hi = 0;
+    page.blocks.forEach(function (b, i) {
+      if (b.heading) {
+        headings[hi].textContent = b.heading;
+        hi++;
+      }
+      blocks[i].innerHTML = b.html;
+    });
+    // Lift Why controls out of scroll so they stay visible on long slides
+    var whys = scroll.querySelectorAll('.why-wrap');
+    if (whys.length) {
+      Array.prototype.forEach.call(whys, function (w) { whyBar.appendChild(w); });
+      whyBar.classList.add('has-why');
     } else {
-      var step = layer.steps[stepIndex - 1];
-      stage.innerHTML =
-        '<h3 class="step-title"></h3><div class="body"></div>';
-      stage.querySelector('.step-title').textContent = step.title;
-      stage.querySelector('.body').innerHTML = step.body;
+      whyBar.classList.remove('has-why');
     }
+    bindWhy(stage);
   }
 
-  function renderPills(layer) {
-    pillRow.innerHTML = '';
-    var total = screenCount(layer);
-    var seen = ensureSeen(layer.id);
-    for (var i = 0; i < total; i++) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'pill' + (i === stepIndex ? ' is-on' : '') + (seen[String(i)] && i !== stepIndex ? ' is-seen' : '');
-      b.textContent = i === 0 ? t('m5.layers.ui.overview', 'Overview') : layer.steps[i - 1].title;
-      b.setAttribute('role', 'tab');
-      b.setAttribute('aria-selected', i === stepIndex ? 'true' : 'false');
-      (function (idx) {
-        b.addEventListener('click', function () { goToScreen(idx); });
-      })(i);
-      pillRow.appendChild(b);
-    }
-  }
-
-  function renderDots(layer) {
+  function renderDots(total) {
     dots.innerHTML = '';
-    var total = screenCount(layer);
+    seriesN.textContent = String(pageIndex + 1);
     seriesTotal.textContent = String(total);
-    seriesN.textContent = String(stepIndex + 1);
     for (var i = 0; i < total; i++) {
       var d = document.createElement('span');
-      d.className = 'dot' + (i === stepIndex ? ' on' : (i < stepIndex ? ' seen' : ''));
+      d.className = 'dot' + (i === pageIndex ? ' on' : (i < pageIndex ? ' seen' : ''));
       dots.appendChild(d);
     }
   }
 
-  function updateNav(layer) {
-    var total = screenCount(layer);
-    var last = stepIndex >= total - 1;
-    prevBtn.disabled = stepIndex === 0;
-    if (last) {
-      nextBtn.textContent = t('m5.layers.ui.backToLayers', 'Back to layers');
+  function paint() {
+    closeWhyPop();
+    var layer = LAYERS[activeLayer];
+    var page = layer.pages[pageIndex];
+    var total = layer.pages.length;
+    var onLast = pageIndex >= total - 1;
+    var hasNextLayer = activeLayer < LAYERS.length - 1;
+    markPageSeen(activeLayer, pageIndex);
+    renderStage(page);
+    renderDots(total);
+    prevBtn.disabled = pageIndex === 0;
+    seriesPrev.disabled = pageIndex === 0;
+    seriesNext.disabled = onLast;
+    nextBtn.classList.remove('btn-advance');
+    nextBtn.classList.add('btn-primary');
+    if (onLast && hasNextLayer) {
+      nextBtn.textContent = 'Go To Layer ' + (activeLayer + 2);
+      nextBtn.classList.remove('btn-primary');
+      nextBtn.classList.add('btn-advance');
+      nextBtn.disabled = false;
+    } else if (onLast) {
+      nextBtn.textContent = t('common.completed', 'Completed');
+      nextBtn.disabled = true;
     } else {
       nextBtn.textContent = t('common.next', 'Next');
+      nextBtn.disabled = false;
     }
+    maybeComplete();
+    syncHeight();
   }
 
-  function paintLayer() {
-    var layer = LAYERS[activeLayer];
-    markScreenSeen(layer.id, stepIndex);
-    layerEyebrow.textContent = layer.eyebrow;
-    layerTitle.textContent = layer.title;
-    renderPills(layer);
-    renderStage(layer);
-    renderDots(layer);
-    updateNav(layer);
-    syncHeight();
+  function goPrevPage() {
+    if (pageIndex > 0) { pageIndex--; paint(); }
+  }
+  function goNextPage() {
+    if (activeLayer < 0) return;
+    var total = LAYERS[activeLayer].pages.length;
+    if (pageIndex < total - 1) { pageIndex++; paint(); }
   }
 
   function openLayer(i) {
     activeLayer = i;
-    stepIndex = 0;
-    homeView.hidden = true;
-    layerView.hidden = false;
-    paintLayer();
-  }
-
-  function goToScreen(idx) {
-    var layer = LAYERS[activeLayer];
-    var total = screenCount(layer);
-    if (idx < 0 || idx >= total) return;
-    stepIndex = idx;
-    paintLayer();
+    pageIndex = 0;
+    tabBtns.forEach(function (b, idx) {
+      b.classList.toggle('is-on', idx === i);
+      b.setAttribute('aria-selected', idx === i ? 'true' : 'false');
+    });
+    renderActionBar(LAYERS[i]);
+    placeholder.hidden = true;
+    pageView.hidden = false;
+    paint();
   }
 
   LAYERS.forEach(function (layer, i) {
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'track';
-    btn.setAttribute('aria-label', t('m5.layers.ui.openLayer', 'Open layer') + ': ' + layer.title);
-    var labels = layer.labels.map(function (lb) {
-      return '<li>' + lb + '</li>';
-    }).join('');
-    btn.innerHTML =
-      '<span class="track-num"></span>' +
-      '<span class="track-title"></span>' +
-      '<ul class="track-labels">' + labels + '</ul>';
-    btn.querySelector('.track-num').textContent = layer.num;
-    btn.querySelector('.track-title').textContent = layer.title;
+    btn.className = 'layer-tab layer-tab--' + (i + 1);
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', 'false');
+    btn.innerHTML = '<span class="layer-num"></span><span class="layer-name"></span>' + CHEV;
+    btn.querySelector('.layer-num').textContent = layer.meta.num;
+    btn.querySelector('.layer-name').textContent = layer.meta.title;
     btn.addEventListener('click', function () { openLayer(i); });
-    tracksEl.appendChild(btn);
-    trackButtons.push(btn);
+    layerTabs.appendChild(btn);
+    tabBtns.push(btn);
   });
 
-  prevBtn.addEventListener('click', function () {
-    if (stepIndex > 0) goToScreen(stepIndex - 1);
-  });
+  prevBtn.addEventListener('click', goPrevPage);
+  seriesPrev.addEventListener('click', goPrevPage);
+  seriesNext.addEventListener('click', goNextPage);
   nextBtn.addEventListener('click', function () {
-    var layer = LAYERS[activeLayer];
-    var total = screenCount(layer);
-    if (stepIndex < total - 1) goToScreen(stepIndex + 1);
-    else {
-      markScreenSeen(layer.id, stepIndex);
-      showHome();
+    var total = LAYERS[activeLayer].pages.length;
+    if (pageIndex < total - 1) {
+      goNextPage();
+      return;
     }
+    if (activeLayer < LAYERS.length - 1) openLayer(activeLayer + 1);
   });
 
-  stage.addEventListener('toggle', function (ev) {
-    if (ev.target && ev.target.tagName === 'DETAILS') {
-      setTimeout(syncHeight, 30);
-    }
-  }, true);
+  // Start on Individual so the course embed is immediately usable
+  openLayer(0);
 
-  showHome();
-  window.addEventListener('resize', function () { syncHeight(); });
+  syncHeight();
+  window.addEventListener('resize', syncHeight);
   window.addEventListener('load', syncHeight);
   if (window.ResizeObserver) new ResizeObserver(syncHeight).observe(document.body);
 })();
-</script></body></html>
+</script>
+</body>
+</html>

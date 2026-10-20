@@ -17,13 +17,7 @@
     display: flex; flex-direction: column;
     height: 560px; min-height: 560px;
   }
-  .alt-note {
-    flex: none;
-    margin: 0; padding: 10px 16px 0;
-    font-size: 11px; line-height: 16px; font-weight: 600; color: #95A0B6;
-  }
-
-  /* —— Layer 1 tabs —— */
+  /* —— Layer tabs —— */
   .layer-tabs {
     flex: none;
     display: flex; align-items: stretch;
@@ -80,6 +74,11 @@
     z-index: 1;
   }
   .layer-tab--3 .layer-num { background: #5C3A78; }
+  .layer-tab.is-done::after {
+    content: '';
+    position: absolute; top: 8px; right: 10px;
+    width: 7px; height: 7px; border-radius: 999px; background: #21B7CB;
+  }
 
   /* —— Layer 2 action labels (not selectable) —— */
   .action-bar {
@@ -268,8 +267,6 @@
 </head>
 <body>
 <div class="card" id="root">
-  <p class="alt-note">Design alternate — tabbed layers (review only) · pane headers removed</p>
-
   <div class="layer-tabs" id="layerTabs" role="tablist" aria-label="Action layers"></div>
   <div class="action-bar" id="actionBar" aria-hidden="true"></div>
 
@@ -377,8 +374,42 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
 </script>
 <script>
 (function () {
+  window.__uaoaAwaitComplete = true;
+  try {
+    var __uaoaAf = window.frameElement;
+    if (__uaoaAf) {
+      __uaoaAf.setAttribute('data-uaoa-await', '1');
+      __uaoaAf.removeAttribute('data-uaoa-complete');
+    }
+  } catch (__uaoaAe) {}
+
   var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   if (typeof window.applyDataI18n === 'function') window.applyDataI18n(document);
+
+  function markComplete() {
+    try {
+      if (window.SCORMSTACK && typeof SCORMSTACK.markBlockCompleted === 'function') {
+        SCORMSTACK.markBlockCompleted();
+      }
+    } catch (e) {}
+    try {
+      window.__uaoaInteractiveComplete = true;
+      window.__uaoaAwaitComplete = false;
+      try {
+        var af = window.frameElement;
+        if (af) {
+          af.setAttribute('data-uaoa-complete', '1');
+          af.removeAttribute('data-uaoa-await');
+        }
+      } catch (e2) {}
+      var fr = window.frameElement;
+      if (fr && fr.ownerDocument) {
+        fr.ownerDocument.dispatchEvent(new CustomEvent('uaoa-interactive-completed', {
+          bubbles: true, detail: { frame: fr }
+        }));
+      }
+    } catch (e3) {}
+  }
 
   function syncHeight() {
     try {
@@ -647,6 +678,39 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   var activeLayer = -1;
   var pageIndex = 0;
   var tabBtns = [];
+  var seenPages = {}; // layerIndex -> { pageIndex: true }
+  var finishedOnce = false;
+
+  function markPageSeen(layerIdx, pageIdx) {
+    if (!seenPages[layerIdx]) seenPages[layerIdx] = {};
+    seenPages[layerIdx][pageIdx] = true;
+  }
+  function layerFullySeen(layerIdx) {
+    var layer = LAYERS[layerIdx];
+    var seen = seenPages[layerIdx] || {};
+    for (var i = 0; i < layer.pages.length; i++) {
+      if (!seen[i]) return false;
+    }
+    return true;
+  }
+  function allLayersFullySeen() {
+    for (var i = 0; i < LAYERS.length; i++) {
+      if (!layerFullySeen(i)) return false;
+    }
+    return true;
+  }
+  function refreshTabDoneState() {
+    tabBtns.forEach(function (b, idx) {
+      b.classList.toggle('is-done', layerFullySeen(idx));
+    });
+  }
+  function maybeComplete() {
+    refreshTabDoneState();
+    if (allLayersFullySeen() && !finishedOnce) {
+      finishedOnce = true;
+      markComplete();
+    }
+  }
 
   function renderActionBar(layer) {
     actionBar.innerHTML = '';
@@ -719,6 +783,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     var total = layer.pages.length;
     var onLast = pageIndex >= total - 1;
     var hasNextLayer = activeLayer < LAYERS.length - 1;
+    markPageSeen(activeLayer, pageIndex);
     renderStage(page);
     renderDots(total);
     prevBtn.disabled = pageIndex === 0;
@@ -738,6 +803,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       nextBtn.textContent = t('common.next', 'Next');
       nextBtn.disabled = false;
     }
+    maybeComplete();
     syncHeight();
   }
 
@@ -788,6 +854,9 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     }
     if (activeLayer < LAYERS.length - 1) openLayer(activeLayer + 1);
   });
+
+  // Start on Individual so the course embed is immediately usable
+  openLayer(0);
 
   syncHeight();
   window.addEventListener('resize', syncHeight);
