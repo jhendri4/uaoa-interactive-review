@@ -39,8 +39,8 @@
     border: 1.5px solid #E5E7EB;
     border-radius: 14px;
     background: #F7F8FA;
-    /* Floor for empty "Select a pathway" state — filled content may reserve more */
-    min-height: 380px;
+    /* Empty state stays compact; filled height is reserved in JS per pathway */
+    min-height: 88px;
     padding: 16px;
     display: flex; flex-direction: column;
   }
@@ -89,7 +89,8 @@
   }
   .example-figure[hidden] { display: none !important; }
   .example-figure img {
-    display: block; width: 100%; height: 100%; min-height: 160px;
+    display: block; width: 100%; height: 100%;
+    min-height: 120px; max-height: 220px;
     object-fit: cover; object-position: center top;
   }
   .dialog-foot {
@@ -297,13 +298,16 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   var buttons = [];
   var openIndex = -1;
   var view = 'pathway'; // 'pathway' | 'example'
-  var PANEL_FLOOR = 380; // matches CSS .panel min-height — empty state stays tall
+  var EMPTY_FLOOR = 88; // matches CSS .panel min-height — compact idle state
   var reservedH = 0;
 
   function syncHeight() {
     try {
       var f = window.frameElement;
-      if (f) f.style.height = Math.ceil(document.documentElement.scrollHeight) + 'px';
+      if (f) {
+        f.style.setProperty('height', Math.ceil(document.documentElement.scrollHeight) + 'px', 'important');
+        f.style.setProperty('border', '0', 'important');
+      }
     } catch (e) {}
   }
 
@@ -347,7 +351,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     imgEl.alt = '';
     setFoot('pathway');
     buttons.forEach(function (b) { b.classList.remove('is-open'); });
-    if (reservedH) applyReservedHeight(reservedH);
+    releaseReservedHeight();
     syncHeight();
     if (focusPathways && buttons[0]) {
       try { buttons[0].focus(); } catch (e) {}
@@ -368,61 +372,65 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       b.classList.toggle('is-open', idx === i);
       if (idx === i) b.classList.add('is-seen');
     });
-    renderOpen();
-    try { closeX.focus(); } catch (e) {}
+    // Reserve only as tall as this pathway needs (pathway + example), not all pathways
+    lockPathwayHeight(i, function () {
+      renderOpen();
+      try { closeX.focus(); } catch (e) {}
+    });
   }
 
   function applyReservedHeight(h) {
-    reservedH = Math.max(PANEL_FLOOR, Math.ceil(h));
+    reservedH = Math.max(EMPTY_FLOOR, Math.ceil(h));
     panel.style.minHeight = reservedH + 'px';
-    // Fixed height keeps pathway ↔ example foot Y identical (no shrink when content is shorter)
+    // Fixed height keeps pathway ↔ example foot Y identical for the open pathway
     panel.style.height = reservedH + 'px';
   }
 
-  function measurePanelHeight() {
+  function releaseReservedHeight() {
+    reservedH = 0;
     panel.style.minHeight = '';
     panel.style.height = '';
-    var maxH = PANEL_FLOOR;
-    PATHWAYS.forEach(function (p) {
-      placeholder.hidden = true;
-      detail.hidden = false;
-      panel.classList.add('is-filled');
-      titleEl.textContent = p.title;
-      ['pathway', 'example'].forEach(function (mode) {
-        detail.classList.toggle('is-example', mode === 'example');
-        bodyEl.innerHTML = mode === 'example' ? p.example : p.pathway;
-        if (mode === 'example' && p.image) {
-          figureEl.hidden = false;
-          imgEl.src = p.image;
-          imgEl.alt = p.imageAlt || '';
-        } else {
-          figureEl.hidden = true;
-        }
-        setFoot(mode);
-        maxH = Math.max(maxH, panel.getBoundingClientRect().height);
-      });
-    });
-    applyReservedHeight(maxH);
-    clearPanel(false);
   }
 
-  function preloadPathwayImages(done) {
-    var urls = PATHWAYS.map(function (p) { return p.image; }).filter(Boolean);
-    var left = urls.length;
-    if (!left) { done(); return; }
-    urls.forEach(function (url) {
-      var img = new Image();
-      img.onload = img.onerror = function () {
-        left -= 1;
-        if (left <= 0) done();
-      };
-      img.src = url;
+  function measurePathwayHeight(index) {
+    var p = PATHWAYS[index];
+    panel.style.minHeight = '';
+    panel.style.height = '';
+    placeholder.hidden = true;
+    detail.hidden = false;
+    panel.classList.add('is-filled');
+    titleEl.textContent = p.title;
+    var maxH = EMPTY_FLOOR;
+    ['pathway', 'example'].forEach(function (mode) {
+      detail.classList.toggle('is-example', mode === 'example');
+      bodyEl.innerHTML = mode === 'example' ? p.example : p.pathway;
+      if (mode === 'example' && p.image) {
+        figureEl.hidden = false;
+        if (imgEl.getAttribute('src') !== p.image) imgEl.src = p.image;
+        imgEl.alt = p.imageAlt || '';
+      } else {
+        figureEl.hidden = true;
+      }
+      setFoot(mode);
+      maxH = Math.max(maxH, panel.getBoundingClientRect().height);
     });
+    return maxH;
   }
 
-  function lockPanelHeight() {
-    // Measure after images load so example view height (and foot Y) matches pathway
-    preloadPathwayImages(measurePanelHeight);
+  function preloadImage(url, done) {
+    if (!url) { done(); return; }
+    var img = new Image();
+    img.onload = img.onerror = function () { done(); };
+    img.src = url;
+  }
+
+  function lockPathwayHeight(index, done) {
+    var p = PATHWAYS[index];
+    preloadImage(p && p.image, function () {
+      applyReservedHeight(measurePathwayHeight(index));
+      if (typeof done === 'function') done();
+      syncHeight();
+    });
   }
 
   PATHWAYS.forEach(function (p, i) {
@@ -456,19 +464,25 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
 
   // Informational — does not gate progress
   markComplete();
-  // Show the tall empty canvas immediately; refine after images load
-  applyReservedHeight(PANEL_FLOOR);
-  lockPanelHeight();
+  // Start compact; grow only when a pathway is open
+  releaseReservedHeight();
   syncHeight();
   var rt = null;
   window.addEventListener('resize', function () {
     clearTimeout(rt);
     rt = setTimeout(function () {
-      reservedH = 0;
-      applyReservedHeight(PANEL_FLOOR);
-      lockPanelHeight();
-      syncHeight();
+      if (openIndex >= 0) {
+        var keepView = view;
+        lockPathwayHeight(openIndex, function () {
+          view = keepView;
+          renderOpen();
+        });
+      } else {
+        releaseReservedHeight();
+        syncHeight();
+      }
     }, 120);
   });
+  if (window.ResizeObserver) new ResizeObserver(syncHeight).observe(document.body);
 })();
 </script></body></html>
