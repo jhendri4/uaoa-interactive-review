@@ -39,7 +39,7 @@
     border: 1.5px solid #E5E7EB;
     border-radius: 14px;
     background: #F7F8FA;
-    /* Empty state stays compact; filled height is reserved in JS per pathway */
+    /* Height locked in JS to the tallest real pathway/example — no oversized floor */
     min-height: 88px;
     padding: 16px;
     display: flex; flex-direction: column;
@@ -298,7 +298,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   var buttons = [];
   var openIndex = -1;
   var view = 'pathway'; // 'pathway' | 'example'
-  var EMPTY_FLOOR = 88; // matches CSS .panel min-height — compact idle state
+  var MEASURE_FLOOR = 88; // measurement floor only — final lock = real max content
   var reservedH = 0;
 
   function syncHeight() {
@@ -351,7 +351,8 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     imgEl.alt = '';
     setFoot('pathway');
     buttons.forEach(function (b) { b.classList.remove('is-open'); });
-    releaseReservedHeight();
+    // Keep the shared canvas height so the panel does not jump closed
+    if (reservedH) applyReservedHeight(reservedH);
     syncHeight();
     if (focusPathways && buttons[0]) {
       try { buttons[0].focus(); } catch (e) {}
@@ -372,65 +373,75 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       b.classList.toggle('is-open', idx === i);
       if (idx === i) b.classList.add('is-seen');
     });
-    // Reserve only as tall as this pathway needs (pathway + example), not all pathways
-    lockPathwayHeight(i, function () {
-      renderOpen();
-      try { closeX.focus(); } catch (e) {}
-    });
+    renderOpen();
+    try { closeX.focus(); } catch (e) {}
   }
 
   function applyReservedHeight(h) {
-    reservedH = Math.max(EMPTY_FLOOR, Math.ceil(h));
+    reservedH = Math.max(MEASURE_FLOOR, Math.ceil(h));
     panel.style.minHeight = reservedH + 'px';
-    // Fixed height keeps pathway ↔ example foot Y identical for the open pathway
+    // Fixed height: pathway ↔ example ↔ idle share one canvas; foot Y stays put
     panel.style.height = reservedH + 'px';
   }
 
-  function releaseReservedHeight() {
-    reservedH = 0;
+  function measurePanelHeight() {
     panel.style.minHeight = '';
     panel.style.height = '';
-  }
-
-  function measurePathwayHeight(index) {
-    var p = PATHWAYS[index];
-    panel.style.minHeight = '';
-    panel.style.height = '';
-    placeholder.hidden = true;
-    detail.hidden = false;
-    panel.classList.add('is-filled');
-    titleEl.textContent = p.title;
-    var maxH = EMPTY_FLOOR;
-    ['pathway', 'example'].forEach(function (mode) {
-      detail.classList.toggle('is-example', mode === 'example');
-      bodyEl.innerHTML = mode === 'example' ? p.example : p.pathway;
-      if (mode === 'example' && p.image) {
-        figureEl.hidden = false;
-        if (imgEl.getAttribute('src') !== p.image) imgEl.src = p.image;
-        imgEl.alt = p.imageAlt || '';
-      } else {
-        figureEl.hidden = true;
-      }
-      setFoot(mode);
-      maxH = Math.max(maxH, panel.getBoundingClientRect().height);
+    var maxH = MEASURE_FLOOR;
+    PATHWAYS.forEach(function (p) {
+      placeholder.hidden = true;
+      detail.hidden = false;
+      panel.classList.add('is-filled');
+      titleEl.textContent = p.title;
+      ['pathway', 'example'].forEach(function (mode) {
+        detail.classList.toggle('is-example', mode === 'example');
+        bodyEl.innerHTML = mode === 'example' ? p.example : p.pathway;
+        if (mode === 'example' && p.image) {
+          figureEl.hidden = false;
+          if (imgEl.getAttribute('src') !== p.image) imgEl.src = p.image;
+          imgEl.alt = p.imageAlt || '';
+        } else {
+          figureEl.hidden = true;
+        }
+        setFoot(mode);
+        maxH = Math.max(maxH, panel.getBoundingClientRect().height);
+      });
     });
-    return maxH;
+    applyReservedHeight(maxH);
+    // Restore idle UI inside the locked canvas
+    openIndex = -1;
+    view = 'pathway';
+    placeholder.hidden = false;
+    detail.hidden = true;
+    detail.classList.remove('is-example');
+    panel.classList.remove('is-filled');
+    titleEl.textContent = '';
+    bodyEl.innerHTML = '';
+    figureEl.hidden = true;
+    imgEl.removeAttribute('src');
+    imgEl.alt = '';
+    setFoot('pathway');
+    buttons.forEach(function (b) { b.classList.remove('is-open'); });
+    syncHeight();
   }
 
-  function preloadImage(url, done) {
-    if (!url) { done(); return; }
-    var img = new Image();
-    img.onload = img.onerror = function () { done(); };
-    img.src = url;
-  }
-
-  function lockPathwayHeight(index, done) {
-    var p = PATHWAYS[index];
-    preloadImage(p && p.image, function () {
-      applyReservedHeight(measurePathwayHeight(index));
-      if (typeof done === 'function') done();
-      syncHeight();
+  function preloadPathwayImages(done) {
+    var urls = PATHWAYS.map(function (p) { return p.image; }).filter(Boolean);
+    var left = urls.length;
+    if (!left) { done(); return; }
+    urls.forEach(function (url) {
+      var img = new Image();
+      img.onload = img.onerror = function () {
+        left -= 1;
+        if (left <= 0) done();
+      };
+      img.src = url;
     });
+  }
+
+  function lockPanelHeight() {
+    // One shared height = tallest real pathway/example (after images), not an arbitrary floor
+    preloadPathwayImages(measurePanelHeight);
   }
 
   PATHWAYS.forEach(function (p, i) {
@@ -464,23 +475,32 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
 
   // Informational — does not gate progress
   markComplete();
-  // Start compact; grow only when a pathway is open
-  releaseReservedHeight();
+  lockPanelHeight();
   syncHeight();
   var rt = null;
   window.addEventListener('resize', function () {
     clearTimeout(rt);
     rt = setTimeout(function () {
-      if (openIndex >= 0) {
-        var keepView = view;
-        lockPathwayHeight(openIndex, function () {
+      var keepIndex = openIndex;
+      var keepView = view;
+      reservedH = 0;
+      lockPanelHeight();
+      // Remeasure restores idle; reopen if needed
+      var reopen = setInterval(function () {
+        if (!reservedH) return;
+        clearInterval(reopen);
+        if (keepIndex >= 0) {
+          openIndex = keepIndex;
           view = keepView;
+          placeholder.hidden = true;
+          detail.hidden = false;
+          panel.classList.add('is-filled');
+          buttons.forEach(function (b, idx) {
+            b.classList.toggle('is-open', idx === keepIndex);
+          });
           renderOpen();
-        });
-      } else {
-        releaseReservedHeight();
-        syncHeight();
-      }
+        }
+      }, 40);
     }, 120);
   });
   if (window.ResizeObserver) new ResizeObserver(syncHeight).observe(document.body);
