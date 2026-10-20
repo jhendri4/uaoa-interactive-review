@@ -143,18 +143,27 @@
     background: #F7F8FA;
   }
   .stage-why.has-why { display: block; padding-top: 12px; }
-  /* Action pair header (Protect yourself, etc.) — primary title */
+  /* Primary headers (Protect yourself; Prepare / Protect on L2) — navy */
   .action-head {
     margin: 0 0 14px;
     font-size: 17px; line-height: 24px; font-weight: 800; color: #1C3564;
   }
   .action-head + h3 { margin-top: 2px; }
-  /* Cell / subpoint titles (Manage your exposure, Prepare, Protect) — bold body, slightly indented */
+  /* Cell titles — indented; navy when primary (L2/L3), ink when under action-head */
   .stage h3 {
-    margin: 0 0 6px 12px; font-size: 15px; line-height: 22px; font-weight: 800; color: #091324;
+    margin: 0 0 6px 12px; font-size: 15px; line-height: 22px; font-weight: 800; color: #1C3564;
   }
+  .stage-scroll.has-action-head h3 { color: #091324; }
   .stage h3 + .block { margin: 0 0 16px 12px; }
   .stage .block + h3 { margin-top: 4px; padding-top: 14px; border-top: 1px solid #E5E7EB; }
+  /* Body copy always Off-black */
+  .stage { color: #091324; }
+  .stage p,
+  .stage li,
+  .stage .block,
+  .stage .block p,
+  .stage .block li,
+  .stage .block strong { color: #091324; }
   .stage p { margin: 0 0 10px; }
   .stage p:last-child { margin-bottom: 0; }
   .stage ul { margin: 0 0 0 1.15em; padding: 0; }
@@ -662,6 +671,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     var whyBar = stage.querySelector('.stage-why');
     scroll.innerHTML = scrollHtml;
     if (page.actionHead) {
+      scroll.classList.add('has-action-head');
       scroll.querySelector('.action-head').textContent = page.actionHead;
     }
     var headings = scroll.querySelectorAll('h3');
