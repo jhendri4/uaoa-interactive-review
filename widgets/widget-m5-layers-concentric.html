@@ -90,13 +90,6 @@
   }
   .placeholder[hidden], .page-view[hidden] { display: none !important; }
 
-  .eyebrow {
-    margin: 0 0 4px; font-size: 11px; font-weight: 800; letter-spacing: .06em;
-    text-transform: uppercase; color: #21B7CB;
-  }
-  .page-title {
-    margin: 0 0 14px; font-size: 20px; line-height: 26px; font-weight: 800; color: #1C3564;
-  }
   .stage {
     flex: 1 1 auto;
     background: #F7F8FA; border-radius: 12px; padding: 18px;
@@ -176,8 +169,6 @@
   <div class="canvas">
     <p class="placeholder" id="placeholder">Select a layer to explore how action works at that level.</p>
     <div class="page-view" id="pageView" hidden>
-      <p class="eyebrow" id="eyebrow"></p>
-      <h2 class="page-title" id="pageTitle"></h2>
       <div class="stage" id="stage"></div>
       <div class="foot">
         <div class="series" aria-live="polite" aria-atomic="true">
@@ -414,8 +405,6 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   var actionBar = document.getElementById('actionBar');
   var placeholder = document.getElementById('placeholder');
   var pageView = document.getElementById('pageView');
-  var eyebrow = document.getElementById('eyebrow');
-  var pageTitle = document.getElementById('pageTitle');
   var stage = document.getElementById('stage');
   var seriesN = document.getElementById('seriesN');
   var seriesTotal = document.getElementById('seriesTotal');
@@ -480,8 +469,6 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     var layer = LAYERS[activeLayer];
     var page = layer.pages[pageIndex];
     var total = layer.pages.length;
-    eyebrow.textContent = layer.meta.eyebrow;
-    pageTitle.textContent = page.title;
     renderStage(page);
     renderDots(total);
     prevBtn.disabled = pageIndex === 0;
