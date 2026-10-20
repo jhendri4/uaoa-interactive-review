@@ -210,10 +210,22 @@
     min-height: 48px;
   }
   .series {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 8px;
     font-size: 13px; font-weight: 800; color: #1C3564; font-variant-numeric: tabular-nums;
   }
-  .dots { display: flex; gap: 8px; }
+  .series-arrow {
+    flex: none;
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font: inherit; color: #1C3564; background: #fff;
+    border: 1.5px solid #D1D5DB; border-radius: 999px;
+    padding: 0; cursor: pointer;
+  }
+  .series-arrow:hover { background: #EEF3FB; border-color: #1C3564; }
+  .series-arrow:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
+  .series-arrow:disabled { opacity: .35; cursor: default; pointer-events: none; }
+  .series-arrow svg { width: 14px; height: 14px; display: block; }
+  .dots { display: flex; gap: 8px; align-items: center; }
   .dot { width: 8px; height: 8px; border-radius: 999px; background: #D1D5DB; }
   .dot.on { background: #7C5297; width: 22px; }
   .dot.seen { background: #B7A3C9; }
@@ -252,9 +264,15 @@
       <div class="stage" id="stage"></div>
       <div class="foot">
         <div class="series" aria-live="polite" aria-atomic="true">
+          <button type="button" class="series-arrow" id="seriesPrev" aria-label="Previous slide">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M12.7 4.3a1 1 0 0 1 0 1.4L8.4 10l4.3 4.3a1 1 0 1 1-1.4 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.4 0z"/></svg>
+          </button>
           <span id="seriesN">1</span>
           <div class="dots" id="dots"></div>
           <span id="seriesTotal">1</span>
+          <button type="button" class="series-arrow" id="seriesNext" aria-label="Next slide">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M7.3 4.3a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 1 1-1.4-1.4L11.6 10 7.3 5.7a1 1 0 0 1 0-1.4z"/></svg>
+          </button>
         </div>
         <div class="foot-actions">
           <button type="button" class="btn btn-ghost" id="prevBtn" data-i18n="common.previous">Previous</button>
@@ -606,6 +624,8 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   var seriesN = document.getElementById('seriesN');
   var seriesTotal = document.getElementById('seriesTotal');
   var dots = document.getElementById('dots');
+  var seriesPrev = document.getElementById('seriesPrev');
+  var seriesNext = document.getElementById('seriesNext');
   var prevBtn = document.getElementById('prevBtn');
   var nextBtn = document.getElementById('nextBtn');
 
@@ -686,6 +706,8 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     renderStage(page);
     renderDots(total);
     prevBtn.disabled = pageIndex === 0;
+    seriesPrev.disabled = pageIndex === 0;
+    seriesNext.disabled = onLast;
     nextBtn.classList.remove('btn-advance');
     nextBtn.classList.add('btn-primary');
     if (onLast && hasNextLayer) {
@@ -701,6 +723,15 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       nextBtn.disabled = false;
     }
     syncHeight();
+  }
+
+  function goPrevPage() {
+    if (pageIndex > 0) { pageIndex--; paint(); }
+  }
+  function goNextPage() {
+    if (activeLayer < 0) return;
+    var total = LAYERS[activeLayer].pages.length;
+    if (pageIndex < total - 1) { pageIndex++; paint(); }
   }
 
   function openLayer(i) {
@@ -730,14 +761,13 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     tabBtns.push(btn);
   });
 
-  prevBtn.addEventListener('click', function () {
-    if (pageIndex > 0) { pageIndex--; paint(); }
-  });
+  prevBtn.addEventListener('click', goPrevPage);
+  seriesPrev.addEventListener('click', goPrevPage);
+  seriesNext.addEventListener('click', goNextPage);
   nextBtn.addEventListener('click', function () {
     var total = LAYERS[activeLayer].pages.length;
     if (pageIndex < total - 1) {
-      pageIndex++;
-      paint();
+      goNextPage();
       return;
     }
     if (activeLayer < LAYERS.length - 1) openLayer(activeLayer + 1);
