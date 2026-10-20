@@ -117,9 +117,9 @@
   .stage li { margin: 0 0 8px; }
   .stage strong { color: #1C3564; font-weight: 800; }
 
+  .why-wrap { position: relative; display: inline-block; margin-top: 14px; }
   .why-btn {
     display: inline-flex; align-items: center; justify-content: center;
-    margin-top: 14px;
     font: inherit; font-weight: 800; font-size: 12px;
     color: #1C3564; background: #fff;
     border: 1.5px solid #1C3564; border-radius: 8px;
@@ -130,15 +130,34 @@
   .why-btn:hover { background: #EEF3FB; }
   .why-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
   .why-btn[aria-expanded="true"] { background: #1C3564; color: #fff; }
-  .why-panel {
+  .why-src { display: none !important; }
+
+  .why-pop {
+    position: fixed;
+    z-index: 80;
     display: none;
-    margin-top: 10px;
-    padding: 12px 14px;
-    background: #fff; border: 1.5px solid #E5E7EB; border-radius: 10px;
+    width: min(360px, calc(100vw - 20px));
+    max-height: min(240px, calc(100vh - 20px));
+    overflow: auto;
+    padding: 14px 40px 14px 14px;
+    background: #fff;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 12px;
+    box-shadow: 0 10px 32px rgba(15, 21, 36, 0.2), 0 2px 6px rgba(15, 21, 36, 0.08);
     font-size: 14px; line-height: 22px; color: #091324;
   }
-  .why-panel.is-open { display: block; }
-  .why-panel p { margin: 0; }
+  .why-pop.is-open { display: block; }
+  .why-pop p { margin: 0; }
+  .why-pop-close {
+    position: absolute; top: 6px; right: 6px;
+    width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font: inherit; font-size: 18px; font-weight: 700; line-height: 1;
+    color: #5A6A85; background: transparent; border: 0; border-radius: 8px;
+    cursor: pointer; padding: 0;
+  }
+  .why-pop-close:hover { background: #F7F8FA; color: #0F1524; }
+  .why-pop-close:focus-visible { outline: none; box-shadow: 0 0 0 2px #7C5297; }
 
   .foot {
     flex: none;
@@ -200,6 +219,10 @@
       </div>
     </div>
   </div>
+</div>
+<div class="why-pop" id="whyPop" role="dialog" aria-modal="false" aria-label="Why does this matter?" hidden>
+  <button type="button" class="why-pop-close" id="whyPopClose" aria-label="Close">×</button>
+  <div class="why-pop-body" id="whyPopBody"></div>
 </div>
 <!--UAOA_I18N-->
 <script>
@@ -309,7 +332,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     };
   }
 
-  // Convert <details><summary>Why…</summary>…</details> → square button + panel
+  // Convert <details><summary>Why…</summary>…</details> → button + hidden source for popover
   function whyButtonify(html) {
     var wrap = document.createElement('div');
     wrap.innerHTML = html;
@@ -325,28 +348,89 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
       var box = document.createElement('div');
       box.className = 'why-wrap';
       box.innerHTML =
-        '<button type="button" class="why-btn" aria-expanded="false"></button>' +
-        '<div class="why-panel" hidden></div>';
+        '<button type="button" class="why-btn" aria-expanded="false" aria-haspopup="dialog"></button>' +
+        '<div class="why-src"></div>';
       box.querySelector('.why-btn').textContent = label;
-      var panel = box.querySelector('.why-panel');
-      panel.innerHTML = bodyHtml || '<p></p>';
-      panel.removeAttribute('hidden');
+      box.querySelector('.why-src').innerHTML = bodyHtml || '<p></p>';
       det.replaceWith(box);
     });
     return wrap.innerHTML;
   }
 
+  var whyPop = document.getElementById('whyPop');
+  var whyPopBody = document.getElementById('whyPopBody');
+  var whyPopClose = document.getElementById('whyPopClose');
+  var openWhyBtn = null;
+
+  function closeWhyPop() {
+    if (!whyPop.classList.contains('is-open') && whyPop.hidden) return;
+    whyPop.classList.remove('is-open');
+    whyPop.hidden = true;
+    if (openWhyBtn) {
+      openWhyBtn.setAttribute('aria-expanded', 'false');
+      openWhyBtn = null;
+    }
+  }
+
+  function positionWhyPop(btn) {
+    var br = btn.getBoundingClientRect();
+    var gap = 8;
+    whyPop.style.left = '0px';
+    whyPop.style.top = '0px';
+    var pw = whyPop.offsetWidth;
+    var ph = whyPop.offsetHeight;
+    var left = br.left;
+    var top = br.top - ph - gap;
+    if (top < 8) top = br.bottom + gap;
+    left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+    if (top + ph > window.innerHeight - 8) top = Math.max(8, window.innerHeight - ph - 8);
+    whyPop.style.left = Math.round(left) + 'px';
+    whyPop.style.top = Math.round(top) + 'px';
+  }
+
+  function openWhyPop(btn) {
+    var src = btn.parentElement && btn.parentElement.querySelector('.why-src');
+    if (!src) return;
+    if (openWhyBtn === btn) {
+      closeWhyPop();
+      return;
+    }
+    closeWhyPop();
+    openWhyBtn = btn;
+    btn.setAttribute('aria-expanded', 'true');
+    whyPopBody.innerHTML = src.innerHTML;
+    whyPop.hidden = false;
+    whyPop.classList.add('is-open');
+    positionWhyPop(btn);
+  }
+
   function bindWhy(root) {
     root.querySelectorAll('.why-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var panel = btn.nextElementSibling;
-        var open = btn.getAttribute('aria-expanded') === 'true';
-        btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-        panel.classList.toggle('is-open', !open);
-        syncHeight();
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        openWhyPop(btn);
       });
     });
   }
+
+  whyPopClose.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var prev = openWhyBtn;
+    closeWhyPop();
+    if (prev) prev.focus();
+  });
+  document.addEventListener('click', function (e) {
+    if (!whyPop.classList.contains('is-open')) return;
+    if (whyPop.contains(e.target)) return;
+    if (openWhyBtn && openWhyBtn.contains(e.target)) return;
+    closeWhyPop();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeWhyPop();
+  });
+  window.addEventListener('resize', function () {
+    if (openWhyBtn) positionWhyPop(openWhyBtn);
+  });
 
   var t1 = track('t1');
   var t2 = track('t2');
@@ -483,6 +567,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   }
 
   function paint() {
+    closeWhyPop();
     var layer = LAYERS[activeLayer];
     var page = layer.pages[pageIndex];
     var total = layer.pages.length;
