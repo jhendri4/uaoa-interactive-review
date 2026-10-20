@@ -121,6 +121,11 @@
     background: #F7F8FA;
   }
   .stage-why.has-why { display: block; padding-top: 12px; }
+  .action-head {
+    margin: 0 0 12px;
+    font-size: 14px; line-height: 20px; font-weight: 800; color: #7C5297;
+  }
+  .action-head + h3 { margin-top: 2px; }
   .stage h3 {
     margin: 0 0 8px; font-size: 16px; line-height: 22px; font-weight: 800; color: #1C3564;
   }
@@ -454,8 +459,8 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   var f2 = { s1: step('flow2', 's1'), s2: step('flow2', 's2'), s3: step('flow2', 's3'), s4: step('flow2', 's4'), s5: step('flow2', 's5') };
   var f3 = { s1: step('flow3', 's1'), s2: step('flow3', 's2'), s3: step('flow3', 's3'), s4: step('flow3', 's4'), s5: step('flow3', 's5'), s6: step('flow3', 's6'), s7: step('flow3', 's7') };
 
-  function page(title, blocks) {
-    return { title: title, blocks: blocks };
+  function page(title, blocks, actionHead) {
+    return { title: title, blocks: blocks, actionHead: actionHead || '' };
   }
   function block(heading, html) {
     return { heading: heading || '', html: whyButtonify(html || '') };
@@ -509,7 +514,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
         if (j === slice.length - 1) html += whyHtml;
         blocks.push(block(parsed.title, html));
       });
-      return [page(step.title, blocks)];
+      return [page(step.title, blocks, step.title)];
     }
 
     return pagesFor(items.slice(0, 2), true).concat(pagesFor(items.slice(2), false));
@@ -603,7 +608,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   }
 
   function renderStage(page) {
-    var scrollHtml = '';
+    var scrollHtml = page.actionHead ? '<p class="action-head"></p>' : '';
     page.blocks.forEach(function (b) {
       if (b.heading) scrollHtml += '<h3></h3>';
       scrollHtml += '<div class="block"></div>';
@@ -612,6 +617,9 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     var scroll = stage.querySelector('.stage-scroll');
     var whyBar = stage.querySelector('.stage-why');
     scroll.innerHTML = scrollHtml;
+    if (page.actionHead) {
+      scroll.querySelector('.action-head').textContent = page.actionHead;
+    }
     var headings = scroll.querySelectorAll('h3');
     var blocks = scroll.querySelectorAll('.block');
     var hi = 0;
