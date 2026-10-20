@@ -134,7 +134,10 @@
     min-height: 0;
     overflow: auto;
     padding: 18px 18px 12px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
+  .stage-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
   .stage-why {
     flex: none;
     display: none;
@@ -192,6 +195,8 @@
     width: min(360px, calc(100vw - 20px));
     max-height: min(240px, calc(100vh - 20px));
     overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     padding: 14px 40px 14px 14px;
     background: #fff;
     border: 1.5px solid #D1D5DB;
@@ -200,6 +205,7 @@
     font-size: 14px; line-height: 22px; color: #091324;
   }
   .why-pop.is-open { display: block; }
+  .why-pop::-webkit-scrollbar { display: none; width: 0; height: 0; }
   .why-pop p { margin: 0; }
   .why-pop-close {
     position: absolute; top: 6px; right: 6px;
