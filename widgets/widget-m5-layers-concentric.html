@@ -39,18 +39,12 @@
     padding: 14px 12px; cursor: pointer;
     transition: background .15s, color .15s;
   }
-  .layer-tab:hover { background: #F7F8FA; }
   .layer-tab:focus-visible { outline: none; box-shadow: inset 0 0 0 2px #7C5297; }
-  .layer-tab.is-on {
-    background: #EEF3FB; color: #1C3564;
-    box-shadow: inset 0 -3px 0 #1C3564;
-  }
   .layer-num {
     flex: none; width: 26px; height: 26px; border-radius: 999px;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px; font-weight: 800; color: #fff; background: #1C3564;
   }
-  .layer-tab.is-on .layer-num { background: #7C5297; }
   .layer-tab .chev {
     position: absolute; right: -7px; top: 50%;
     transform: translateY(-50%);
@@ -58,6 +52,34 @@
     z-index: 1; pointer-events: none;
   }
   .layer-tab:last-child .chev { display: none; }
+
+  /* Light → dark purple distinction across layers */
+  .layer-tab--1 { background: #F7F2FA; }
+  .layer-tab--1:hover { background: #EFE6F5; }
+  .layer-tab--1.is-on {
+    background: #E8DCF0; color: #4A2F63;
+    box-shadow: inset 0 -3px 0 #B08CC4;
+  }
+  .layer-tab--1 .layer-num { background: #B08CC4; }
+  .layer-tab--1.is-on .layer-num { background: #9A6FB3; }
+
+  .layer-tab--2 { background: #EEE4F4; }
+  .layer-tab--2:hover { background: #E4D6EF; }
+  .layer-tab--2.is-on {
+    background: #DCCCE8; color: #3F2756;
+    box-shadow: inset 0 -3px 0 #7C5297;
+  }
+  .layer-tab--2 .layer-num { background: #7C5297; }
+  .layer-tab--2.is-on .layer-num { background: #6A4582; }
+
+  .layer-tab--3 { background: #E2D2EC; }
+  .layer-tab--3:hover { background: #D6C2E4; }
+  .layer-tab--3.is-on {
+    background: #C9AED9; color: #2F1C42;
+    box-shadow: inset 0 -3px 0 #5C3A78;
+  }
+  .layer-tab--3 .layer-num { background: #5C3A78; }
+  .layer-tab--3.is-on .layer-num { background: #4A2F63; }
 
   /* —— Layer 2 action labels (not selectable) —— */
   .action-bar {
@@ -695,7 +717,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   LAYERS.forEach(function (layer, i) {
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'layer-tab';
+    btn.className = 'layer-tab layer-tab--' + (i + 1);
     btn.setAttribute('role', 'tab');
     btn.setAttribute('aria-selected', 'false');
     btn.innerHTML = '<span class="layer-num"></span><span class="layer-name"></span>' + CHEV;
