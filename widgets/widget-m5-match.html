@@ -16,17 +16,6 @@
     padding: 28px 28px 22px; box-shadow: 0 1px 2px rgba(28,53,100,.04);
     display: flex; flex-direction: column;
   }
-  .eyebrow {
-    margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em;
-    text-transform: uppercase; color: #21b7cb;
-  }
-  .prompt {
-    margin: 0 0 8px; font-size: 16px; line-height: 26px; font-weight: 700; color: #1C3564;
-  }
-  .hint {
-    margin: 0 0 18px; font-size: 13px; font-weight: 700; color: #5A6A85;
-  }
-
   .board {
     display: flex; flex-direction: column; gap: 10px;
     margin-bottom: 18px;
@@ -126,10 +115,6 @@
 </head>
 <body>
   <div class="card" id="card">
-    <p class="eyebrow" data-i18n="m5.match.ui.eyebrow">Check your understanding</p>
-    <p class="prompt" data-i18n="m5.match.ui.prompt">Match each scenario to a level</p>
-    <p class="hint" data-i18n="m5.match.ui.hint">Drag each level card into the matching scenario on the right. Place all three before submitting.</p>
-
     <div class="board" id="board" role="list"></div>
 
     <div class="tray" id="tray" role="list" data-i18n-aria="m5.match.ui.trayAria" aria-label="Level cards"></div>
