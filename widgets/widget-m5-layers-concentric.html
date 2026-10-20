@@ -461,16 +461,48 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     return { heading: heading || '', html: whyButtonify(html || '') };
   }
 
-  // Individual — Overview + three actions (in-pane headers like Org)
+  // Split an Individual action body into two slides (2 list items each); Why stays on both
+  function splitIndivAction(step) {
+    var wrap = document.createElement('div');
+    wrap.innerHTML = step.body || '';
+    var details = wrap.querySelector('details');
+    var whyHtml = '';
+    if (details) {
+      whyHtml = details.outerHTML;
+      details.remove();
+    }
+    var ul = wrap.querySelector('ul');
+    var items = ul ? Array.prototype.slice.call(ul.querySelectorAll(':scope > li')) : [];
+    var leadParts = [];
+    Array.prototype.forEach.call(wrap.childNodes, function (n) {
+      if (n === ul) return;
+      if (n.nodeType === 1) leadParts.push(n.outerHTML);
+      else if (n.nodeType === 3 && n.textContent.trim()) leadParts.push('<p>' + n.textContent.trim() + '</p>');
+    });
+    var lead = leadParts.join('');
+
+    function bodyFor(slice, withLead) {
+      var list = slice.length
+        ? '<ul>' + slice.map(function (li) { return li.outerHTML; }).join('') + '</ul>'
+        : '';
+      return (withLead ? lead : '') + list + whyHtml;
+    }
+
+    var first = items.slice(0, 2);
+    var second = items.slice(2);
+    var pages = [page(step.title, [block(step.title, bodyFor(first, true))])];
+    if (second.length) pages.push(page(step.title, [block(step.title, bodyFor(second, false))]));
+    return pages;
+  }
+
+  // Individual — Overview + each action as two slides (2 bullets each)
   var LAYER_INDIV = {
     meta: t1,
     actions: t1.labels,
-    pages: [
-      page(t('m5.layers.ui.overview', 'Overview'), [block('', t1.intro)]),
-      page(f1.s1.title, [block(f1.s1.title, f1.s1.body)]),
-      page(f1.s2.title, [block(f1.s2.title, f1.s2.body)]),
-      page(f1.s3.title, [block(f1.s3.title, f1.s3.body)])
-    ]
+    pages: [page(t('m5.layers.ui.overview', 'Overview'), [block('', t1.intro)])]
+      .concat(splitIndivAction(f1.s1))
+      .concat(splitIndivAction(f1.s2))
+      .concat(splitIndivAction(f1.s3))
   };
 
   // Organisations — Overview | Prepare+Protect | Respond+Connect | Closing
