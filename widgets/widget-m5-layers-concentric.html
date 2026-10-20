@@ -150,6 +150,8 @@
   .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
   .btn-primary { background: #1C3564; color: #fff; }
   .btn-primary:hover { background: #152A52; }
+  .btn-advance { background: #F1A01F; color: #0F1524; }
+  .btn-advance:hover { background: #E09010; }
   .btn-ghost { background: #fff; color: #1C3564; border: 1.5px solid #1C3564; }
   .btn-ghost:hover { background: #EEF3FB; }
   .btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
@@ -470,13 +472,25 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     var layer = LAYERS[activeLayer];
     var page = layer.pages[pageIndex];
     var total = layer.pages.length;
+    var onLast = pageIndex >= total - 1;
+    var hasNextLayer = activeLayer < LAYERS.length - 1;
     renderStage(page);
     renderDots(total);
     prevBtn.disabled = pageIndex === 0;
-    nextBtn.textContent = pageIndex >= total - 1
-      ? t('common.completed', 'Completed')
-      : t('common.next', 'Next');
-    nextBtn.disabled = pageIndex >= total - 1;
+    nextBtn.classList.remove('btn-advance');
+    nextBtn.classList.add('btn-primary');
+    if (onLast && hasNextLayer) {
+      nextBtn.textContent = 'Go To Layer ' + (activeLayer + 2);
+      nextBtn.classList.remove('btn-primary');
+      nextBtn.classList.add('btn-advance');
+      nextBtn.disabled = false;
+    } else if (onLast) {
+      nextBtn.textContent = t('common.completed', 'Completed');
+      nextBtn.disabled = true;
+    } else {
+      nextBtn.textContent = t('common.next', 'Next');
+      nextBtn.disabled = false;
+    }
     syncHeight();
   }
 
@@ -512,7 +526,12 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
   });
   nextBtn.addEventListener('click', function () {
     var total = LAYERS[activeLayer].pages.length;
-    if (pageIndex < total - 1) { pageIndex++; paint(); }
+    if (pageIndex < total - 1) {
+      pageIndex++;
+      paint();
+      return;
+    }
+    if (activeLayer < LAYERS.length - 1) openLayer(activeLayer + 1);
   });
 
   syncHeight();
