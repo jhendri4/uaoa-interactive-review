@@ -53,33 +53,33 @@
   }
   .layer-tab:last-child .chev { display: none; }
 
-  /* Light → dark purple distinction across layers */
+  /* Light → dark purple distinction across layers; active = outline, not shade */
   .layer-tab--1 { background: #F7F2FA; }
   .layer-tab--1:hover { background: #EFE6F5; }
   .layer-tab--1.is-on {
-    background: #E8DCF0; color: #4A2F63;
-    box-shadow: inset 0 -3px 0 #B08CC4;
+    background: #F7F2FA; color: #4A2F63;
+    box-shadow: inset 0 0 0 2px #B08CC4;
+    z-index: 1;
   }
   .layer-tab--1 .layer-num { background: #B08CC4; }
-  .layer-tab--1.is-on .layer-num { background: #9A6FB3; }
 
   .layer-tab--2 { background: #EEE4F4; }
   .layer-tab--2:hover { background: #E4D6EF; }
   .layer-tab--2.is-on {
-    background: #DCCCE8; color: #3F2756;
-    box-shadow: inset 0 -3px 0 #7C5297;
+    background: #EEE4F4; color: #3F2756;
+    box-shadow: inset 0 0 0 2px #7C5297;
+    z-index: 1;
   }
   .layer-tab--2 .layer-num { background: #7C5297; }
-  .layer-tab--2.is-on .layer-num { background: #6A4582; }
 
   .layer-tab--3 { background: #E2D2EC; }
   .layer-tab--3:hover { background: #D6C2E4; }
   .layer-tab--3.is-on {
-    background: #C9AED9; color: #2F1C42;
-    box-shadow: inset 0 -3px 0 #5C3A78;
+    background: #E2D2EC; color: #2F1C42;
+    box-shadow: inset 0 0 0 2px #5C3A78;
+    z-index: 1;
   }
   .layer-tab--3 .layer-num { background: #5C3A78; }
-  .layer-tab--3.is-on .layer-num { background: #4A2F63; }
 
   /* —— Layer 2 action labels (not selectable) —— */
   .action-bar {
