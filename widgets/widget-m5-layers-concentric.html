@@ -14,15 +14,18 @@
     width: 100%; max-width: 920px; margin: 0 auto;
     background: #fff; border: 1.5px solid #D1D5DB; border-radius: 16px;
     overflow: hidden; box-shadow: 0 1px 2px rgba(28,53,100,.04);
-    display: flex; flex-direction: column; min-height: 480px;
+    display: flex; flex-direction: column;
+    height: 560px; min-height: 560px;
   }
   .alt-note {
+    flex: none;
     margin: 0; padding: 10px 16px 0;
     font-size: 11px; line-height: 16px; font-weight: 600; color: #95A0B6;
   }
 
   /* —— Layer 1 tabs —— */
   .layer-tabs {
+    flex: none;
     display: flex; align-items: stretch;
     border-bottom: 1.5px solid #E5E7EB;
     margin-top: 8px;
@@ -58,6 +61,7 @@
 
   /* —— Layer 2 action labels (not selectable) —— */
   .action-bar {
+    flex: none;
     display: none;
     flex-wrap: wrap; align-items: center; gap: 6px 4px;
     padding: 10px 14px;
@@ -90,8 +94,14 @@
   }
   .placeholder[hidden], .page-view[hidden] { display: none !important; }
 
+  .page-view {
+    flex: 1 1 auto;
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
   .stage {
     flex: 1 1 auto;
+    min-height: 0;
     background: #F7F8FA; border-radius: 12px; padding: 18px;
     font-size: 15px; line-height: 24px; color: #091324;
     overflow: auto;
@@ -131,8 +141,10 @@
   .why-panel p { margin: 0; }
 
   .foot {
+    flex: none;
     display: flex; justify-content: space-between; gap: 12px; align-items: center;
     flex-wrap: wrap; margin-top: 14px;
+    min-height: 48px;
   }
   .series {
     display: flex; align-items: center; gap: 10px;
@@ -142,11 +154,13 @@
   .dot { width: 8px; height: 8px; border-radius: 999px; background: #D1D5DB; }
   .dot.on { background: #7C5297; width: 22px; }
   .dot.seen { background: #B7A3C9; }
-  .foot-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+  .foot-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; align-items: center; }
   .btn {
     font: inherit; font-weight: 700; font-size: 15px; border-radius: 999px;
     padding: 12px 22px; cursor: pointer; border: 0;
+    min-height: 46px; line-height: 1.2;
   }
+  #nextBtn { min-width: 10.5em; }
   .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
   .btn-primary { background: #1C3564; color: #fff; }
   .btn-primary:hover { background: #152A52; }
