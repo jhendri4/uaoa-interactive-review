@@ -8,9 +8,9 @@
     --body: #091324;
     --title: #1c3564;
     --risk-bg: #FFF1E0;
-    --risk-border: #F1A01F;
+    --risk-border: #D35420;
     --benefit-bg: #E5F7FA;
-    --benefit-border: #21b7cb;
+    --benefit-border: #1C3564;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: transparent; color-scheme: light; }
@@ -48,16 +48,11 @@
   .card strong { font-weight: 700; }
   .risk .card {
     background: var(--risk-bg);
-    border-color: color-mix(in srgb, var(--risk-border) 45%, white);
+    border-color: var(--risk-border);
   }
   .benefit .card {
     background: var(--benefit-bg);
-    border-color: color-mix(in srgb, var(--benefit-border) 45%, white);
-  }
-  /* Fallback borders when color-mix unsupported */
-  @supports not (border-color: color-mix(in srgb, red 50%, white)) {
-    .risk .card { border-color: #F8D39A; }
-    .benefit .card { border-color: #9ADCE6; }
+    border-color: var(--benefit-border);
   }
 </style>
 </head>
