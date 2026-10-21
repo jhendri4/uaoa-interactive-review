@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Scroll-fade harness</title>
+<style>
+  body{margin:0;font-family:system-ui;background:#fff;color:#091324}
+  .shell{max-width:720px;margin:0 auto;padding:24px 24px 120px}
+  .block{padding:16px 0;border-bottom:1px solid #eee}
+  iframe.break{width:100%;border:0;height:90px;display:block}
+  h1{font-size:22px} h2{font-size:18px}
+  .note{background:#FEF3E2;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:16px}
+</style>
+<script src="course-scroll-pin.js"></script>
+</head>
+<body>
+<div class="shell">
+  <div class="note">Local harness mirroring ScormStack Continue + parent pin JS. Click each Continue and check for leftover empty space.</div>
+  <div class="block"><h1>Segment A</h1><p>Visible above the first Continue.</p></div>
+  <iframe class="break" src="scroll-fade-embed.html" title="Continue 1"></iframe>
+  <div class="block"><h2>Segment B</h2><p>Should stay veiled until Continue 1.</p></div>
+  <iframe class="break" src="scroll-fade-embed.html" title="Continue 2"></iframe>
+  <div class="block"><h2>Segment C / Key takeaways stand-in</h2><p>After Continue 2. Watch for a huge empty spacer below this block.</p>
+  <p>More lines for pin behavior.</p><p>Line 3</p><p>Line 4</p><p>Line 5</p><p>Line 6</p></div>
+</div>
+</body></html>
