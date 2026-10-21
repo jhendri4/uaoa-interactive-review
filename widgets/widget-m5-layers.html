@@ -17,6 +17,7 @@
     background: #fff; border: 1.5px solid #D1D5DB; border-radius: 16px;
     overflow: hidden; box-shadow: 0 1px 2px rgba(28,53,100,.04);
     display: flex; flex-direction: column;
+    /* Stable canvas across overview → intro → tabs → summary so foot controls don't jump */
     min-height: 640px;
   }
   .view { display: none; flex: 1 1 auto; flex-direction: column; min-height: 0; }
@@ -58,7 +59,7 @@
   .pill.outline { background: #fff; color: #1C3564; border: 1.5px solid #1C3564; }
 
   /* —— Layer shell —— */
-  .layer-shell { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .layer-shell { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
   .accent-bar { height: 5px; flex-shrink: 0; background: var(--accent, #21B7CB); }
   .topbar {
     flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -67,10 +68,11 @@
   .topbar-ey { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--deep, #03707D); text-align: center; flex: 1; }
   .layer-body { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 
-  /* Intro */
+  /* Intro — top-align so empty tabbar space is not reserved; card min-height keeps canvas stable */
   .intro {
-    flex: 1; display: grid; grid-template-columns: minmax(0,1fr) minmax(200px,280px);
-    gap: 28px; padding: 22px 22px 12px; align-items: center; min-height: 0; overflow: auto;
+    flex: 1 1 auto; display: grid; grid-template-columns: minmax(0,1fr) minmax(200px,280px);
+    gap: 28px; padding: 16px 22px 12px; align-items: start; align-content: start;
+    min-height: 0; overflow: auto;
   }
   .intro h2 { margin: 0 0 12px; font-size: 26px; line-height: 1.15; font-weight: 800; color: #1C3564; }
   .intro .lead { margin: 0 0 14px; font-size: 15px; line-height: 24px; color: #3B4763; font-weight: 500; }
@@ -88,7 +90,7 @@
   }
   .art-lg img { width: 100%; max-width: 240px; height: auto; object-fit: contain; display: block; }
 
-  /* Action tabs */
+  /* Action tabs — only in DOM on explore step; never use an invisible spacer on intro/summary */
   .tabbar {
     flex: none; display: grid; grid-template-columns: repeat(3, minmax(0,1fr));
     gap: 8px; padding: 14px 16px 0;
@@ -148,10 +150,11 @@
   .callout .cb { font-size: 13px; line-height: 1.45; font-weight: 500; opacity: .95; }
   .callout svg { flex-shrink: 0; margin-top: 2px; color: #21B7CB; }
 
-  /* Summary */
+  /* Summary — same top-fill pattern as intro (no tabbar) */
   .summary {
-    flex: 1; display: grid; grid-template-columns: minmax(0,1fr) minmax(200px,280px);
-    gap: 24px; padding: 22px; align-items: start; overflow: auto; min-height: 0;
+    flex: 1 1 auto; display: grid; grid-template-columns: minmax(0,1fr) minmax(200px,280px);
+    gap: 24px; padding: 16px 22px 12px; align-items: start; align-content: start;
+    overflow: auto; min-height: 0;
   }
   .summary .ey { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--deep, #F1A01F); }
   .summary h2 { margin: 8px 0 14px; font-size: 22px; line-height: 1.2; font-weight: 800; color: #1C3564; }
