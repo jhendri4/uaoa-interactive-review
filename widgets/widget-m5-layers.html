@@ -24,15 +24,9 @@
 
   /* —— Overview —— */
   .ov { flex: 1; display: flex; flex-direction: column; gap: 18px; padding: 22px 22px 18px; min-height: 0; }
-  .ov-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .ov-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .12em; color: #03707D; text-transform: uppercase; }
-  .ov-title { margin: 4px 0 0; font-size: 26px; line-height: 1.15; font-weight: 800; color: #1C3564; letter-spacing: .01em; }
+  .ov-head { display: flex; flex-direction: column; gap: 0; }
+  .ov-title { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 800; color: #1C3564; letter-spacing: .01em; }
   .ov-sub { margin: 8px 0 0; font-size: 15px; line-height: 22px; font-weight: 500; color: #3B4763; max-width: 52ch; }
-  .ov-prog { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
-  .ov-prog-label { font-size: 13px; font-weight: 700; color: #3B4763; }
-  .bars { display: flex; gap: 6px; }
-  .bars span { height: 6px; width: 36px; border-radius: 3px; background: #D1D5DB; }
-  .bars span.on { background: var(--bar, #21B7CB); }
   .banners { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
   .banner {
     display: flex; align-items: stretch; width: 100%; min-height: 118px;
@@ -71,7 +65,6 @@
     padding: 10px 16px; border-bottom: 1.5px solid #E5E7EB; min-height: 56px;
   }
   .topbar-ey { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--deep, #03707D); text-align: center; flex: 1; }
-  .topbar .bars span { width: 24px; }
   .layer-body { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 
   /* Intro */
@@ -188,10 +181,15 @@
   .series-arrow:hover { background: #EEF3FB; border-color: #1C3564; }
   .series-arrow:disabled { opacity: .35; cursor: default; pointer-events: none; }
   .series-arrow svg { width: 14px; height: 14px; display: block; }
-  .dots { display: flex; gap: 8px; align-items: center; }
-  .dot { width: 8px; height: 8px; border-radius: 999px; background: #D1D5DB; }
-  .dot.on { background: #7C5297; width: 22px; }
-  .dot.seen { background: #B7A3C9; }
+  .seg-track {
+    width: 88px; height: 6px; border-radius: 999px;
+    background: #E5E7EB; overflow: hidden; flex-shrink: 0;
+  }
+  .seg-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #21B7CB 0%, #7C5297 50%, #F1A01F 100%);
+    transition: width .28s ease;
+  }
   .foot-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; align-items: center; }
   .btn {
     font: inherit; font-weight: 700; font-size: 15px; border-radius: 999px;
@@ -488,26 +486,16 @@
     return '<img class="' + (cls || '') + '" src="' + src + '" alt="" aria-hidden="true">';
   }
 
-  function barsHtml(width, exploredOnly) {
-    return '<div class="bars" aria-hidden="true">' + LAYERS.map(function (L, i) {
-      var on = explored(i);
-      return '<span class="' + (on ? 'on' : '') + '" style="width:' + width + 'px;--bar:' + L.meta.accent + ';background:' + (on ? L.meta.accent : '#D1D5DB') + '"></span>';
-    }).join('') + '</div>';
-  }
-
   function fmt(template, map) {
     return String(template).replace(/\{(\w+)\}/g, function (_, k) { return map[k] != null ? map[k] : ''; });
   }
 
   function renderOverview() {
-    var n = LAYERS.filter(function (_, i) { return explored(i); }).length;
     var html = '<div class="ov fade">' +
-      '<div class="ov-head"><div>' +
-        '<div class="ov-eyebrow">Module 5 · Take action</div>' +
+      '<div class="ov-head">' +
         '<h1 class="ov-title">Three layers of action</h1>' +
         '<p class="ov-sub">' + esc(t('m5.layers.ui.prompt', 'Safer sport depends on action at every level. Select a layer to explore what each one can do.')) + '</p>' +
       '</div>' +
-      '<div class="ov-prog"><div class="ov-prog-label">' + esc(fmt(t('m5.layers.ui.exploredOf', '{n} of 3 layers explored'), { n: n })) + '</div>' + barsHtml(36) + '</div></div>' +
       '<div class="banners" role="list">';
     LAYERS.forEach(function (L, i) {
       var ex = explored(i);
@@ -531,7 +519,7 @@
       '<div class="topbar" style="--deep:' + L.meta.deep + ';--accent:' + L.meta.accent + '">' +
         '<button type="button" class="btn btn-ghost" data-act="back" style="min-height:40px;padding:8px 14px;font-size:14px">' + ICON_BACK + ' ' + esc(t('m5.layers.ui.backToLayers', 'Back to layers')) + '</button>' +
         '<div class="topbar-ey">' + esc(fmt(t('m5.layers.ui.layerOf', 'Layer {n} of 3'), { n: L.meta.num })) + ' · ' + esc(L.meta.title) + '</div>' +
-        '<div style="width:100px;display:flex;justify-content:flex-end">' + barsHtml(22) + '</div>' +
+        '<div style="width:120px;flex-shrink:0" aria-hidden="true"></div>' +
       '</div>';
   }
 
@@ -560,16 +548,15 @@
   }
 
   function footHtml(L, total, index, nextLabel, showPrev) {
-    var dots = '';
-    for (var i = 0; i < total; i++) {
-      dots += '<span class="dot' + (i === index ? ' on' : (S.visited[visitedKey(S.layer, i)] ? ' seen' : '')) + '"></span>';
-    }
+    var pct = total > 0 ? Math.round(((index + 1) / total) * 100) : 0;
     return '<div class="foot">' +
       '<div class="series" aria-live="polite">' +
         '<button type="button" class="series-arrow" data-act="series-prev" aria-label="' + esc(t('common.previous', 'Previous')) + '"' + (index === 0 && !showPrev ? ' disabled' : '') + '>' +
           '<svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M12.7 4.3a1 1 0 0 1 0 1.4L8.4 10l4.3 4.3a1 1 0 1 1-1.4 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.4 0z"/></svg></button>' +
         '<span>' + (index + 1) + '</span>' +
-        '<div class="dots">' + dots + '</div>' +
+        '<div class="seg-track" role="progressbar" aria-valuemin="1" aria-valuemax="' + total + '" aria-valuenow="' + (index + 1) + '" aria-label="' + esc(fmt(t('m5.layers.ui.segmentProgress', 'Step {n} of {total}'), { n: index + 1, total: total })) + '">' +
+          '<div class="seg-fill" style="width:' + pct + '%"></div>' +
+        '</div>' +
         '<span>' + total + '</span>' +
         '<button type="button" class="series-arrow" data-act="series-next" aria-label="' + esc(t('common.next', 'Next')) + '"' + (index >= total - 1 && !L.summary ? ' disabled' : '') + '>' +
           '<svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M7.3 4.3a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 1 1-1.4-1.4L11.6 10 7.3 5.7a1 1 0 0 1 0-1.4z"/></svg></button>' +
