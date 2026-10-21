@@ -44,8 +44,8 @@
 (function () {
   // Allow redeploy to replace logic on full reload; same-page hot path uses pin API.
   window.UAOA = window.UAOA || {};
-  if (window.UAOA.__scrollPinVersion === 6) return;
-  window.UAOA.__scrollPinVersion = 6;
+  if (window.UAOA.__scrollPinVersion === 7) return;
+  window.UAOA.__scrollPinVersion = 7;
   window.UAOA.__scrollPinInstalled = true;
 
   var SPACER_ATTR = 'data-uaoa-pin-spacer';
@@ -247,11 +247,9 @@
     var desired = desiredPinY(sc);
     var delta = deltaToY(target, desired);
     var spacer = ensureSpacer(target);
-    var paneH = isPageScroller(sc) ? window.innerHeight : sc.clientHeight;
-    // Room needed below the target’s top so it can sit at `desired`
-    var needBelow = Math.max(0, Math.ceil(paneH - (desired - (isPageScroller(sc) ? 0 : sc.getBoundingClientRect().top))));
-    // Also add any current shortfall (target still below pin line)
-    var grow = Math.max(0, Math.ceil(delta + 32), needBelow);
+    // Only grow by the shortfall to the pin line. A full-viewport pad left
+    // ~900px empty tails under short segments (Continue → Key takeaways).
+    var grow = Math.max(0, Math.ceil(delta + 32));
     var cur = parseFloat(spacer.style.height) || 0;
     if (grow > cur) spacer.style.height = grow + 'px';
 
