@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --body: #091324;
+    --title: #1c3564;
+    --risk-bg: #FFF1E0;
+    --risk-border: #D35420;
+    --benefit-bg: #E5F7FA;
+    --benefit-border: #1C3564;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; color-scheme: light; }
+  body {
+    font-family: 'Cerebri Sans Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: var(--body);
+    padding: 4px 2px 12px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  h3 {
+    margin: 0 0 12px;
+    font-size: 1.25rem;
+    line-height: 1.35;
+    font-weight: 700;
+    color: var(--title);
+  }
+  .section + .section { margin-top: 28px; }
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .card {
+    margin: 0;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--body);
+  }
+  .card strong { font-weight: 700; }
+  .risk .card {
+    background: var(--risk-bg);
+    border-color: var(--risk-border);
+  }
+  .benefit .card {
+    background: var(--benefit-bg);
+    border-color: var(--benefit-border);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="section" aria-labelledby="risks-heading">
+      <h3 id="risks-heading">Potential risks</h3>
+      <ul class="cards risk">
+        <li class="card">
+          <strong>Creating and amplifying harm:</strong>
+          Generative AI can produce or manipulate text, images, audio, and video quickly and at scale.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="benefits-heading">
+      <h3 id="benefits-heading">Potential benefits</h3>
+      <ul class="cards benefit">
+        <li class="card">
+          <strong>Detecting harmful content:</strong>
+          AI can help identify potentially harmful content and patterns across large volumes of online activity.
+        </li>
+        <li class="card">
+          <strong>Supporting moderation:</strong>
+          Automated systems can flag content for review and help moderators prioritise potential risks.
+        </li>
+        <li class="card">
+          <strong>Supporting users:</strong>
+          AI-enabled tools can help filter unwanted content and connect people with reporting and safety features.
+        </li>
+      </ul>
+    </section>
+  </div>
+<script>
+(function () {
+  function syncHeight() {
+    try {
+      var f = window.frameElement;
+      if (f) {
+        f.style.setProperty('height', Math.ceil(document.body.getBoundingClientRect().height + 8) + 'px', 'important');
+        f.style.setProperty('border', '0', 'important');
+      }
+    } catch (e) {}
+  }
+  function markComplete() {
+    try {
+      if (window.SCORMSTACK && typeof SCORMSTACK.markBlockCompleted === 'function') {
+        SCORMSTACK.markBlockCompleted();
+      }
+    } catch (e) {}
+    try {
+      window.__uaoaInteractiveComplete = true;
+      window.__uaoaAwaitComplete = false;
+      try {
+        var __uaoaAf2 = window.frameElement;
+        if (__uaoaAf2) {
+          __uaoaAf2.setAttribute('data-uaoa-complete', '1');
+          __uaoaAf2.removeAttribute('data-uaoa-await');
+        }
+      } catch (__uaoaAe2) {}
+      var __uaoaFrame = window.frameElement;
+      if (__uaoaFrame && __uaoaFrame.ownerDocument) {
+        __uaoaFrame.ownerDocument.dispatchEvent(new CustomEvent('uaoa-interactive-completed', {
+          bubbles: true,
+          detail: { frame: __uaoaFrame }
+        }));
+      }
+    } catch (__uaoaE2) {}
+  }
+
+  syncHeight();
+  if (window.ResizeObserver) new ResizeObserver(syncHeight).observe(document.body);
+  window.addEventListener('load', syncHeight);
+  // Optional / informational — complete on load; do not gate progress
+  markComplete();
+})();
+</script>
+</body>
+</html>

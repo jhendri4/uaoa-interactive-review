@@ -97,15 +97,37 @@
       }
     } catch (e) {}
   }
+  function markComplete() {
+    try {
+      if (window.SCORMSTACK && typeof SCORMSTACK.markBlockCompleted === 'function') {
+        SCORMSTACK.markBlockCompleted();
+      }
+    } catch (e) {}
+    try {
+      window.__uaoaInteractiveComplete = true;
+      window.__uaoaAwaitComplete = false;
+      try {
+        var __uaoaAf2 = window.frameElement;
+        if (__uaoaAf2) {
+          __uaoaAf2.setAttribute('data-uaoa-complete', '1');
+          __uaoaAf2.removeAttribute('data-uaoa-await');
+        }
+      } catch (__uaoaAe2) {}
+      var __uaoaFrame = window.frameElement;
+      if (__uaoaFrame && __uaoaFrame.ownerDocument) {
+        __uaoaFrame.ownerDocument.dispatchEvent(new CustomEvent('uaoa-interactive-completed', {
+          bubbles: true,
+          detail: { frame: __uaoaFrame }
+        }));
+      }
+    } catch (__uaoaE2) {}
+  }
+
   syncHeight();
   if (window.ResizeObserver) new ResizeObserver(syncHeight).observe(document.body);
   window.addEventListener('load', syncHeight);
-  // Informational — mark complete on load so it does not gate progress
-  try {
-    if (window.SCORMSTACK && typeof SCORMSTACK.markBlockCompleted === 'function') {
-      SCORMSTACK.markBlockCompleted();
-    }
-  } catch (e) {}
+  // Optional / informational — complete on load; do not gate progress
+  markComplete();
 })();
 </script>
 </body>
