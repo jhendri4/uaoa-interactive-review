@@ -73,6 +73,19 @@
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
     margin-top: auto; padding-top: 4px; flex: none;
   }
+  .nav {
+    display: flex; align-items: center; gap: 10px; min-width: 0;
+  }
+  .series-arrow {
+    flex: none; width: 28px; height: 28px; border-radius: 999px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    font: inherit; color: #1C3564; background: #fff;
+    border: 1.5px solid #D1D5DB; padding: 0;
+  }
+  .series-arrow:hover:not(:disabled) { background: #EEF3FB; border-color: #1C3564; }
+  .series-arrow:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
+  .series-arrow:disabled { opacity: .35; cursor: default; pointer-events: none; }
+  .series-arrow svg { width: 14px; height: 14px; display: block; }
   .series {
     display: flex; align-items: center; gap: 10px;
     font-size: 13px; font-weight: 800; color: #1C3564;
@@ -223,10 +236,18 @@
       </fieldset>
 
       <div class="foot">
-        <div class="series" aria-live="polite" aria-atomic="true">
-          <span class="series-n" id="seriesN">1</span>
-          <div class="dots" id="dots" aria-hidden="true"></div>
-          <span class="series-total" id="seriesTotal">4</span>
+        <div class="nav" aria-label="Question navigation">
+          <button type="button" class="series-arrow" id="seriesPrev" data-i18n-aria="common.previous" aria-label="Previous" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M12.7 4.3a1 1 0 0 1 0 1.4L8.4 10l4.3 4.3a1 1 0 1 1-1.4 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.4 0z"/></svg>
+          </button>
+          <div class="series" aria-live="polite" aria-atomic="true">
+            <span class="series-n" id="seriesN">1</span>
+            <div class="dots" id="dots" aria-hidden="true"></div>
+            <span class="series-total" id="seriesTotal">4</span>
+          </div>
+          <button type="button" class="series-arrow" id="seriesNext" data-i18n-aria="common.next" aria-label="Next" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M7.3 4.3a1 1 0 0 1 1.4 0l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 1 1-1.4-1.4L11.6 10 7.3 5.7a1 1 0 0 1 0-1.4z"/></svg>
+          </button>
         </div>
         <button type="button" class="btn btn-primary" id="nextBtn" disabled data-i18n="common.next">Next</button>
       </div>
@@ -396,6 +417,8 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   var seriesN = document.getElementById('seriesN');
   var seriesTotal = document.getElementById('seriesTotal');
   var dots = document.getElementById('dots');
+  var seriesPrev = document.getElementById('seriesPrev');
+  var seriesNext = document.getElementById('seriesNext');
   var nextBtn = document.getElementById('nextBtn');
   seriesTotal.textContent = String(TOTAL);
   var continueBtn = document.getElementById('continueBtn');
@@ -410,6 +433,37 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   var MAX_ATTEMPTS = 2;
   var attempt = 0;
   var revealCorrectOnReview = false;
+  var Q2_CHOICE_KEYS = ['language', 'target', 'pattern'];
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i];
+      a[i] = a[j];
+      a[j] = tmp;
+    }
+    return a;
+  }
+  function shuffleQ2Options() {
+    var selects = document.querySelectorAll('.panel[data-q="2"] select.blank-select');
+    Array.prototype.forEach.call(selects, function (sel) {
+      var saved = sel.value || '';
+      var order = shuffle(Q2_CHOICE_KEYS);
+      sel.innerHTML = '';
+      var ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = t('common.chooseEllipsis', 'choose…');
+      sel.appendChild(ph);
+      order.forEach(function (key) {
+        var opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = t('m1.check.questions.q2.choices.' + key, key);
+        sel.appendChild(opt);
+      });
+      sel.value = saved && order.indexOf(saved) >= 0 ? saved : '';
+    });
+  }
 
   function frame() {
     try { return window.frameElement; } catch (e) { return null; }
@@ -526,13 +580,17 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   });
 
   var q2Selects = Array.prototype.slice.call(document.querySelectorAll('.blank-select'));
-  q2Selects.forEach(function (sel) {
-    sel.addEventListener('change', function () {
-      var idx = parseInt(sel.getAttribute('data-blank'), 10);
-      answers[2][idx] = sel.value || null;
-      refresh();
+  function bindQ2Selects() {
+    q2Selects = Array.prototype.slice.call(document.querySelectorAll('.blank-select'));
+    q2Selects.forEach(function (sel) {
+      sel.onchange = function () {
+        var idx = parseInt(sel.getAttribute('data-blank'), 10);
+        answers[2][idx] = sel.value || null;
+        refresh();
+      };
     });
-  });
+  }
+  bindQ2Selects();
 
   var q3Inputs = Array.prototype.slice.call(document.querySelectorAll('input[name="q3"]'));
   q3Inputs.forEach(function (inp) {
@@ -568,6 +626,11 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
       dots.appendChild(el);
     }
   }
+  function updateSeriesArrows() {
+    seriesPrev.disabled = step <= 1;
+    // Forward arrow mirrors primary Next: require an answer to advance / finish.
+    seriesNext.disabled = !isAnswered(step);
+  }
   function showStep(n) {
     step = n;
     [1, 2, 3, 4].forEach(function (i) {
@@ -575,13 +638,22 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     });
     seriesN.textContent = String(n);
     renderDots();
-    nextBtn.textContent = 'Next';
+    nextBtn.textContent = t('common.next', 'Next');
     refresh();
   }
 
   function refresh() {
     nextBtn.disabled = !isAnswered(step);
+    updateSeriesArrows();
     syncHeight();
+  }
+  function goNext() {
+    if (!isAnswered(step)) return;
+    if (step < TOTAL) {
+      showStep(step + 1);
+      return;
+    }
+    showResults();
   }
 
   function arraysEqual(a, b) {
@@ -689,14 +761,12 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     syncHeight();
   }
 
-  nextBtn.addEventListener('click', function () {
-    if (!isAnswered(step)) return;
-    if (step < TOTAL) {
-      showStep(step + 1);
-      return;
-    }
-    showResults();
+  nextBtn.addEventListener('click', goNext);
+  seriesPrev.addEventListener('click', function () {
+    if (step <= 1) return;
+    showStep(step - 1);
   });
+  seriesNext.addEventListener('click', goNext);
 
   document.getElementById('tryAgainBtn').addEventListener('click', function () {
     if (attempt >= MAX_ATTEMPTS) return;
@@ -706,6 +776,8 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
       i.checked = false;
       i.closest('.opt-card').classList.remove('selected');
     });
+    shuffleQ2Options();
+    bindQ2Selects();
     q2Selects.forEach(function (s) { s.value = ''; });
     q3Inputs.forEach(function (i) {
       i.checked = false;
@@ -718,7 +790,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     applyQuestionStageHeight();
     continueBtn.disabled = true;
     continueBtn.classList.add('faded');
-    continueBtn.textContent = 'Continue';
+    continueBtn.textContent = t('common.continue', 'Continue');
     done.classList.remove('show');
     showStep(1);
   });
@@ -734,6 +806,8 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     syncHeight();
   });
 
+  shuffleQ2Options();
+  bindQ2Selects();
   showStep(1);
   lockLayout();
   var resizeTimer = null;
