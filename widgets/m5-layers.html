@@ -59,7 +59,7 @@
   .pill.outline { background: #fff; color: #1C3564; border: 1.5px solid #1C3564; }
 
   /* —— Layer shell —— */
-  .layer-shell { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  .layer-shell { position: relative; flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
   .accent-bar { height: 5px; flex-shrink: 0; background: var(--accent, #21B7CB); }
   .topbar {
     flex: none; display: flex; align-items: center; justify-content: center; gap: 12px;
@@ -158,10 +158,10 @@
   .why-btn[aria-expanded="true"] .badge { background: #21B7CB; color: #fff; }
   .popover {
     position: absolute; left: 0; bottom: calc(100% + 10px); z-index: 8;
-    width: min(300px, 72vw); padding: 14px 16px; border-radius: 12px;
+    width: min(280px, 72vw); padding: 12px 14px; border-radius: 12px;
     background: #fff; border: 1.5px solid #D1D5DB;
     box-shadow: 0 10px 28px rgba(28,53,100,.16);
-    font-size: 14px; line-height: 22px; color: #091324;
+    font-size: 13px; line-height: 20px; color: #091324;
   }
   .popover::after {
     content: ''; position: absolute; left: 22px; bottom: -7px;
@@ -170,42 +170,62 @@
   }
   .popover[hidden] { display: none !important; }
   .popover p { margin: 0; }
-  .popover .pop-title { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #1C3564; }
-  .popover-orp {
-    position: absolute; z-index: 9; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    width: min(420px, 90%); max-height: 80%; overflow: auto;
-    padding: 18px 20px; border-radius: 14px; background: #fff;
-    border: 1.5px solid #D1D5DB; box-shadow: 0 14px 36px rgba(28,53,100,.2);
+  .popover .pop-title { margin: 0 0 6px; font-size: 13px; font-weight: 800; color: #1C3564; }
+
+  /* Full-widget ORP dialog — covers layer shell, not the card grid */
+  .orp-dialog {
+    position: absolute; inset: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(9,19,36,.45);
   }
-  .popover-orp::after { display: none; }
-  .popover-backdrop {
-    position: absolute; inset: 0; z-index: 7; background: rgba(9,19,36,.28);
-    border-radius: 0;
+  .orp-dialog[hidden] { display: none !important; }
+  .orp-dialog-panel {
+    position: relative; width: min(400px, 100%);
+    background: #fff; border-radius: 16px; padding: 22px 24px 20px;
+    border: 1.5px solid #E5E7EB;
+    box-shadow: 0 18px 40px rgba(28,53,100,.22);
   }
-  .popover-backdrop[hidden] { display: none !important; }
-  .content-right { position: relative; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-  .groups { display: grid; gap: 14px; min-width: 0; }
-  .group-label { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--deep, #03707D); margin-bottom: 8px; }
-  .cards { display: grid; gap: 10px; }
+  .orp-dialog-panel .pop-title {
+    margin: 0 28px 10px 0; font-size: 16px; font-weight: 800; line-height: 1.3; color: #5C3A78;
+  }
+  .orp-dialog-panel p.body {
+    margin: 0; font-size: 14px; line-height: 22px; color: #3B4763; font-weight: 500;
+  }
+  .orp-dialog-close {
+    position: absolute; top: 12px; right: 12px;
+    width: 32px; height: 32px; border-radius: 999px; border: 0;
+    background: #F4F6FA; color: #1C3564; font-size: 18px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .orp-dialog-close:hover { background: #E8ECF3; }
+
+  .content-right {
+    display: flex; flex-direction: column; gap: 8px; min-width: 0;
+    align-self: start; /* don’t stretch a tall empty column */
+  }
+  .groups { display: grid; gap: 10px; min-width: 0; }
+  .group-label { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--deep, #03707D); margin-bottom: 6px; }
+  .cards { display: grid; gap: 8px; }
   .cards.cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .cards.cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
   .item-card {
-    display: flex; gap: 10px; align-items: flex-start;
-    padding: 12px 14px; border: 1.5px solid #D1D5DB; border-radius: 12px; background: #fff;
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 10px 12px; border: 1.5px solid #D1D5DB; border-radius: 10px; background: #fff;
   }
-  .item-card .t { font-size: 14px; font-weight: 800; line-height: 1.3; color: #1C3564; }
-  .item-card .b { font-size: 13px; line-height: 1.45; color: #3B4763; margin-top: 4px; font-weight: 500; }
+  .item-card .badge { width: 24px; height: 24px; font-size: 12px; }
+  .item-card .t { font-size: 13px; font-weight: 800; line-height: 1.25; color: #1C3564; }
+  .item-card .b { font-size: 12px; line-height: 1.4; color: #3B4763; margin-top: 2px; font-weight: 500; }
   button.item-card.orp-card {
     width: 100%; text-align: left; cursor: pointer;
     background: #5C3A78; border-color: #5C3A78; color: #fff;
-    align-items: center; min-height: 88px;
+    align-items: center;
     transition: transform .15s, box-shadow .15s;
   }
-  button.item-card.orp-card:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(92,58,120,.28); }
-  button.item-card.orp-card .t { color: #fff; font-size: 16px; letter-spacing: .02em; }
-  button.item-card.orp-card .b { color: rgba(255,255,255,.85); margin-top: 2px; }
+  button.item-card.orp-card:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(92,58,120,.28); }
+  button.item-card.orp-card .t { color: #fff; font-size: 13px; letter-spacing: .02em; }
+  button.item-card.orp-card .b { color: rgba(255,255,255,.85); margin-top: 2px; font-size: 11px; }
   button.item-card.orp-card .badge {
-    background: rgba(255,255,255,.18); color: #fff; width: 30px; height: 30px;
+    background: rgba(255,255,255,.18); color: #fff;
   }
   button.item-card.orp-card[aria-expanded="true"] {
     box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #5C3A78;
@@ -733,16 +753,6 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
           }).join('') + '</div></div>';
       }).join('') + '</div>';
 
-    var orpPop = '';
-    if (T.orpTitle || T.orpBody) {
-      orpPop =
-        '<div class="popover-backdrop" data-act="orp-close"' + (S.orp ? '' : ' hidden') + ' aria-hidden="' + (!S.orp) + '"></div>' +
-        '<div class="popover popover-orp" role="dialog" aria-label="' + esc(T.orpTitle || 'ORP') + '"' + (S.orp ? '' : ' hidden') + '>' +
-          (T.orpTitle ? '<p class="pop-title">' + esc(T.orpTitle) + '</p>' : '') +
-          '<p>' + esc(T.orpBody || '') + '</p>' +
-        '</div>';
-    }
-
     var nextLabel;
     if (!last) nextLabel = t('m5.layers.ui.nextPrefix', 'Next:') + ' ' + L.tabs[S.tab + 1].label;
     else if (L.summary) nextLabel = t('m5.layers.ui.nextPrefix', 'Next:') + ' ' + t('m5.layers.ui.howItConnects', 'How it connects');
@@ -758,8 +768,18 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
 
     return '<div style="flex:1;display:flex;flex-direction:column;min-height:0">' + tb +
       '<div class="content fade" style="--tint:' + m.tint + ';--deep:' + m.deep + ';--accent:' + m.accent + '">' +
-        left + '<div class="content-right">' + groupsHtml + orpPop + '</div></div>' +
+        left + '<div class="content-right">' + groupsHtml + '</div></div>' +
       footHtml(nextLabel, false) + '</div>';
+  }
+
+  function orpDialogHtml(T) {
+    if (!T || !(T.orpTitle || T.orpBody)) return '';
+    return '<div class="orp-dialog" data-act="orp-close" role="presentation"' + (S.orp ? '' : ' hidden') + '>' +
+      '<div class="orp-dialog-panel" role="dialog" aria-modal="true" aria-label="' + esc(T.orpTitle || 'ORP') + '" data-act="orp-panel">' +
+        '<button type="button" class="orp-dialog-close" data-act="orp-close" aria-label="' + esc(t('common.close', 'Close')) + '">×</button>' +
+        (T.orpTitle ? '<p class="pop-title">' + esc(T.orpTitle) + '</p>' : '') +
+        '<p class="body">' + esc(T.orpBody || '') + '</p>' +
+      '</div></div>';
   }
 
   function summaryBody(L) {
@@ -795,8 +815,10 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     show('layer');
     var L = LAYERS[S.layer];
     var body = S.step === 'intro' ? introBody(L) : (S.step === 'summary' ? summaryBody(L) : tabsBody(L));
-    document.getElementById('viewLayer').innerHTML = '<div class="layer-shell">' + topbar(L) + '<div class="layer-body">' + body + '</div></div>';
-    // intro has no foot; hide series context — already no foot in intro
+    var orpT = (S.step === 'tab') ? L.tabs[S.tab] : null;
+    document.getElementById('viewLayer').innerHTML =
+      '<div class="layer-shell">' + topbar(L) + '<div class="layer-body">' + body + '</div>' +
+      orpDialogHtml(orpT) + '</div>';
     maybeComplete();
     syncHeight();
   }
@@ -843,6 +865,10 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check your un
     var b = e.target.closest('[data-act]');
     if (!b) return;
     var a = b.getAttribute('data-act');
+    if (a === 'orp-panel') {
+      e.stopPropagation();
+      return;
+    }
     if (a === 'open') {
       S.screen = 'layer';
       S.layer = +b.getAttribute('data-i');
