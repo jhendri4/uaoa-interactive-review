@@ -160,8 +160,7 @@
   }
   .content-left {
     display: flex; flex-direction: column; gap: 12px; min-width: 0;
-    /* Fill column height so Why stays anchored at bottom without pushing copy down */
-    align-self: stretch;
+    align-self: start; /* Don’t stretch — Why sits under copy, not pinned to card bottom */
   }
   .content-left-main {
     flex: 0 0 auto; display: flex; flex-direction: column; justify-content: flex-start;
@@ -171,7 +170,7 @@
   .content-left h2 { margin: 0; font-size: 22px; line-height: 1.15; font-weight: 800; color: #1C3564; }
   .content-left .lead { margin: 0; font-size: 14px; line-height: 22px; color: #3B4763; font-weight: 500; }
   .why-anchor {
-    position: relative; flex: none; margin-top: auto; align-self: flex-start;
+    position: relative; flex: none; margin-top: 4px; align-self: flex-start;
     padding-bottom: 4px;
   }
   .why-btn {
@@ -184,47 +183,40 @@
   .why-btn:hover { background: #EEF3FB; }
   .why-btn[aria-expanded="true"] { background: #1C3564; color: #fff; }
   .why-btn[aria-expanded="true"] .badge { background: #21B7CB; color: #fff; }
-  .popover {
-    position: absolute; left: 0; bottom: calc(100% + 10px); z-index: 8;
-    width: min(280px, 72vw); padding: 12px 14px; border-radius: 12px;
-    background: #fff; border: 1.5px solid #D1D5DB;
-    box-shadow: 0 10px 28px rgba(28,53,100,.16);
-    font-size: 13px; line-height: 20px; color: #091324;
-  }
-  .popover::after {
-    content: ''; position: absolute; left: 22px; bottom: -7px;
-    width: 12px; height: 12px; background: #fff; border-right: 1.5px solid #D1D5DB;
-    border-bottom: 1.5px solid #D1D5DB; transform: rotate(45deg);
-  }
-  .popover[hidden] { display: none !important; }
-  .popover p { margin: 0; }
-  .popover .pop-title { margin: 0 0 6px; font-size: 13px; font-weight: 800; color: #1C3564; }
 
-  /* Full-widget ORP dialog — covers layer shell, not the card grid */
+  /* Full-widget Why / ORP dialogs — grey scrim over layer shell; panel elevated above */
+  .why-dialog,
   .orp-dialog {
     position: absolute; inset: 0; z-index: 30;
     display: flex; align-items: center; justify-content: center;
     padding: 24px; background: rgba(9,19,36,.45);
   }
+  .why-dialog[hidden],
   .orp-dialog[hidden] { display: none !important; }
+  .why-dialog-panel,
   .orp-dialog-panel {
     position: relative; width: min(400px, 100%);
     background: #fff; border-radius: 16px; padding: 22px 24px 20px;
     border: 1.5px solid #E5E7EB;
     box-shadow: 0 18px 40px rgba(28,53,100,.22);
   }
+  .why-dialog-panel .pop-title,
   .orp-dialog-panel .pop-title {
     margin: 0 28px 10px 0; font-size: 16px; font-weight: 800; line-height: 1.3; color: #5C3A78;
   }
+  .why-dialog-panel p,
   .orp-dialog-panel p.body {
     margin: 0; font-size: 14px; line-height: 22px; color: #3B4763; font-weight: 500;
   }
+  .why-dialog-panel p + p { margin-top: 10px; }
+  .why-dialog-close,
   .orp-dialog-close {
     position: absolute; top: 12px; right: 12px;
     width: 32px; height: 32px; border-radius: 999px; border: 0;
     background: #F4F6FA; color: #1C3564; font-size: 18px; line-height: 1;
     display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
   }
+  .why-dialog-close:hover,
   .orp-dialog-close:hover { background: #E8ECF3; }
 
   .content-right {
@@ -802,13 +794,9 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
     var whyBlock = '';
     if (T.why) {
       whyBlock = '<div class="why-anchor">' +
-        '<button type="button" class="why-btn" data-act="why" aria-expanded="' + S.why + '" aria-controls="whyPopover">' +
+        '<button type="button" class="why-btn" data-act="why" aria-expanded="' + S.why + '" aria-controls="whyDialog">' +
           '<span class="badge">?</span>' + esc(t('m5.layers.ui.whyMatter', 'Why does this matter?')) +
-        '</button>' +
-        '<div class="popover" id="whyPopover" role="dialog" aria-label="' + esc(t('m5.layers.ui.whyMatter', 'Why does this matter?')) + '"' +
-          (S.why ? '' : ' hidden') + '>' +
-          (T.why.indexOf('<') >= 0 ? T.why : '<p>' + esc(T.why) + '</p>') +
-        '</div></div>';
+        '</button></div>';
     }
 
     var groupsHtml = '<div class="groups" style="grid-template-columns:repeat(' + T.groups.length + ',minmax(0,1fr))">' +
@@ -846,6 +834,17 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
       '<div class="content fade" style="--tint:' + m.tint + ';--deep:' + m.deep + ';--accent:' + m.accent + '">' +
         left + '<div class="content-right"><div class="content-panel">' + groupsHtml + '</div></div></div>' +
       footHtml(nextLabel, false) + '</div>';
+  }
+
+  function whyDialogHtml(T) {
+    if (!T || !T.why) return '';
+    var body = T.why.indexOf('<') >= 0 ? T.why : '<p>' + esc(T.why) + '</p>';
+    var label = t('m5.layers.ui.whyMatter', 'Why does this matter?');
+    return '<div class="why-dialog" id="whyDialog" data-act="why-close" role="presentation"' + (S.why ? '' : ' hidden') + '>' +
+      '<div class="why-dialog-panel" role="dialog" aria-modal="true" aria-label="' + esc(label) + '" data-act="why-panel">' +
+        '<button type="button" class="why-dialog-close" data-act="why-close" aria-label="' + esc(t('common.close', 'Close')) + '">×</button>' +
+        body +
+      '</div></div>';
   }
 
   function orpDialogHtml(T) {
@@ -895,10 +894,10 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
     show('layer');
     var L = LAYERS[S.layer];
     var body = S.step === 'intro' ? introBody(L) : (S.step === 'summary' ? summaryBody(L) : tabsBody(L));
-    var orpT = (S.step === 'tab') ? L.tabs[S.tab] : null;
+    var tabT = (S.step === 'tab') ? L.tabs[S.tab] : null;
     document.getElementById('viewLayer').innerHTML =
       '<div class="layer-shell">' + topbar(L) + '<div class="layer-body">' + body + '</div>' +
-      orpDialogHtml(orpT) + '</div>';
+      whyDialogHtml(tabT) + orpDialogHtml(tabT) + '</div>';
     setCardMode();
     maybeComplete();
     syncHeight();
@@ -946,7 +945,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
     var b = e.target.closest('[data-act]');
     if (!b) return;
     var a = b.getAttribute('data-act');
-    if (a === 'orp-panel') {
+    if (a === 'orp-panel' || a === 'why-panel') {
       e.stopPropagation();
       return;
     }
@@ -973,6 +972,9 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
       render();
       var w = document.querySelector('[data-act="why"]');
       if (w) w.focus();
+    } else if (a === 'why-close') {
+      S.why = false;
+      render();
     } else if (a === 'orp') {
       S.orp = !S.orp;
       if (S.orp) S.why = false;
