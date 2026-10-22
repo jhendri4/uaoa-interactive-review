@@ -771,9 +771,11 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
     '</div>';
   }
 
-  function footHtml(nextLabel, showPrev) {
+  function footHtml(nextLabel, showPrev, showBack) {
+    // Summary uses the right primary as "Back to layers" — omit the left duplicate
+    if (showBack === undefined) showBack = true;
     return '<div class="foot">' +
-      backBtn() +
+      (showBack ? backBtn() : '') +
       '<div class="foot-actions">' +
         (showPrev ? '<button type="button" class="btn btn-ghost" data-act="prev">' + esc(t('common.previous', 'Previous')) + '</button>' : '') +
         '<button type="button" class="btn btn-primary" data-act="next">' + esc(nextLabel) + ' ' + ICON_NEXT + '</button>' +
@@ -861,7 +863,7 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
           '<h2>' + esc(sm.title) + '</h2>' +
           sm.paras.map(function (p) { return '<p class="lead">' + esc(p) + '</p>'; }).join('') +
         '</div></div>' +
-      footHtml(t('m5.layers.ui.backToLayers', 'Back to layers'), true) + '</div>';
+      footHtml(t('m5.layers.ui.backToLayers', 'Back to layers'), true, false) + '</div>';
   }
 
   function show(screen) {
