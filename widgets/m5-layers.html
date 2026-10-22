@@ -91,7 +91,8 @@
   /* Intro — body sits under the art; foot is a sibling pinned to the card bottom */
   .intro {
     flex: 1 1 auto; display: flex; flex-direction: column; gap: 14px;
-    padding: 10px 22px 8px; min-height: 0; justify-content: flex-start;
+    /* Hair more air under the topbar rule before copy + art */
+    padding: 16px 22px 8px; min-height: 0; justify-content: flex-start;
   }
   .intro-top {
     display: grid; grid-template-columns: minmax(0,1fr) minmax(140px,180px);
@@ -104,7 +105,8 @@
   /* Prompt + action list float up under the right-side image (not with the bottom buttons) */
   .intro-below {
     display: flex; flex-direction: column; gap: 10px; min-width: 0;
-    flex: none; margin-top: 0;
+    /* Hair more space under the intro block before prompt + action layers */
+    flex: none; margin-top: 6px;
   }
   .intro .prompt { margin: 0; font-size: 15px; font-weight: 800; color: #1C3564; }
   .intro-steps {
