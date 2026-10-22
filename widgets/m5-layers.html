@@ -772,8 +772,12 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
   }
 
   function footHtml(nextLabel, showPrev, showBack) {
-    // Summary uses the right primary as "Back to layers" — omit the left duplicate
-    if (showBack === undefined) showBack = true;
+    var backLabel = t('m5.layers.ui.backToLayers', 'Back to layers');
+    // When the right primary is already "Back to layers" (last action tab of a
+    // layer without a summary, or the summary slide), omit the left duplicate.
+    // Keep left when it would be Previous, or when right is a Next: label.
+    if (nextLabel === backLabel) showBack = false;
+    else if (showBack === undefined) showBack = true;
     return '<div class="foot">' +
       (showBack ? backBtn() : '') +
       '<div class="foot-actions">' +
