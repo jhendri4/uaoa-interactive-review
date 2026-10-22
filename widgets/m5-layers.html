@@ -17,11 +17,15 @@
     background: #fff; border: 1.5px solid #D1D5DB; border-radius: 16px;
     overflow: hidden; box-shadow: 0 1px 2px rgba(28,53,100,.04);
     display: flex; flex-direction: column;
-    /* Natural height by default — intro stays compact; taller modes opt in below */
     min-height: 0;
   }
-  /* Overview / explore tabs / summary need a bit more room than the intro */
+  /* Top-level overview keeps a roomy natural canvas */
   .card.is-roomy { min-height: 560px; }
+  /* Inside a layer: one fixed card height for intro → tabs → summary (buttons stay bottom-anchored) */
+  .card.is-layer {
+    height: 580px;
+    min-height: 580px;
+  }
   .view { display: none; flex: 1 1 auto; flex-direction: column; min-height: 0; }
   .view.is-on { display: flex; }
 
@@ -72,7 +76,10 @@
   .pill.outline { background: #fff; color: #1C3564; border: 1.5px solid #1C3564; }
 
   /* —— Layer shell —— */
-  .layer-shell { position: relative; flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  .layer-shell {
+    position: relative; flex: 1 1 auto; display: flex; flex-direction: column;
+    min-height: 0; height: 100%;
+  }
   .accent-bar { height: 5px; flex-shrink: 0; background: var(--accent, #21B7CB); }
   .topbar {
     flex: none; display: flex; align-items: center; justify-content: center; gap: 12px;
@@ -81,22 +88,23 @@
   .topbar-ey { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--deep, #03707D); text-align: center; }
   .layer-body { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 
-  /* Intro — stacked content (not pinned to a tall canvas) */
+  /* Intro — body sits under the art; foot is a sibling pinned to the card bottom */
   .intro {
-    flex: none; display: flex; flex-direction: column; gap: 16px;
-    padding: 10px 22px 14px; align-content: start;
+    flex: 1 1 auto; display: flex; flex-direction: column; gap: 14px;
+    padding: 10px 22px 8px; min-height: 0; justify-content: flex-start;
   }
   .intro-top {
     display: grid; grid-template-columns: minmax(0,1fr) minmax(140px,180px);
     gap: 20px; align-items: start;
-    margin-top: 0;
+    flex: none;
   }
   .intro-copy { min-width: 0; }
   .intro h2 { margin: 0 0 12px; font-size: 26px; line-height: 1.15; font-weight: 800; color: #1C3564; }
   .intro .lead { margin: 0; font-size: 15px; line-height: 24px; color: #3B4763; font-weight: 500; }
+  /* Prompt + action list float up under the right-side image (not with the bottom buttons) */
   .intro-below {
     display: flex; flex-direction: column; gap: 10px; min-width: 0;
-    margin-top: 0; /* sit under copy — not margin-top:auto pinned to card bottom */
+    flex: none; margin-top: 0;
   }
   .intro .prompt { margin: 0; font-size: 15px; font-weight: 800; color: #1C3564; }
   .intro-steps {
@@ -110,11 +118,6 @@
     display: flex; align-items: center; gap: 8px;
     font-size: 14px; font-weight: 700; color: #091324; white-space: nowrap;
   }
-  .intro-foot {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 16px 24px; flex-wrap: wrap;
-  }
-  .intro-foot .btn { flex: none; }
   .badge {
     width: 28px; height: 28px; flex-shrink: 0; border-radius: 999px;
     font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center;
@@ -295,11 +298,13 @@
   @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
   @media (max-width: 720px) {
+    .card.is-layer { height: auto; min-height: 540px; }
     .intro-top, .content, .summary { grid-template-columns: 1fr; }
     .intro .art-lg { justify-self: start; }
     .intro .art-lg img { max-width: 132px; }
-    .intro-foot { align-items: stretch; flex-direction: column-reverse; }
-    .intro-foot .btn { width: 100%; }
+    .foot { flex-direction: column-reverse; align-items: stretch; }
+    .foot-actions { margin-left: 0; width: 100%; }
+    .foot .btn { width: 100%; }
     .intro-list { gap: 10px; }
     .banner { flex-wrap: wrap; }
     .banner .art { width: 100%; min-height: 88px; }
@@ -734,25 +739,31 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
       var tx = plainFromHtml(p.outerHTML);
       if (tx) lead += (lead ? ' ' : '') + tx;
     });
-    // strip trailing prompt ul from lead if duplicated
-    return '<div class="intro fade" style="--tint:' + m.tint + ';--deep:' + m.deep + ';--accent:' + m.accent + '">' +
-      '<div class="intro-top">' +
-        '<div class="intro-copy">' +
-          (m.headline ? '<h2>' + esc(m.headline) + '</h2>' : '') +
-          (lead ? '<p class="lead">' + esc(lead) + '</p>' : '') +
+    // Body under the art; foot is a sibling so buttons stay bottom-anchored on the fixed layer card
+    return '<div style="flex:1;display:flex;flex-direction:column;min-height:0">' +
+      '<div class="intro fade" style="--tint:' + m.tint + ';--deep:' + m.deep + ';--accent:' + m.accent + '">' +
+        '<div class="intro-top">' +
+          '<div class="intro-copy">' +
+            (m.headline ? '<h2>' + esc(m.headline) + '</h2>' : '') +
+            (lead ? '<p class="lead">' + esc(lead) + '</p>' : '') +
+          '</div>' +
+          '<div class="art-lg">' + artImg(m.artKey) + '</div>' +
         '</div>' +
-        '<div class="art-lg">' + artImg(m.artKey) + '</div>' +
+        '<div class="intro-below">' +
+          '<p class="prompt">' + esc(m.prompt) + '</p>' +
+          '<div class="intro-steps">' +
+            '<ul class="intro-list">' + m.labels.map(function (lb, j) {
+              return '<li><span class="badge">' + (j + 1) + '</span>' + esc(lb) + '</li>';
+            }).join('') + '</ul>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
-      '<div class="intro-below">' +
-        '<p class="prompt">' + esc(m.prompt) + '</p>' +
-        '<div class="intro-steps">' +
-          '<ul class="intro-list">' + m.labels.map(function (lb, j) {
-            return '<li><span class="badge">' + (j + 1) + '</span>' + esc(lb) + '</li>';
-          }).join('') + '</ul>' +
-        '</div>' +
-        '<div class="intro-foot">' +
-          backBtn() +
-          '<button type="button" class="btn btn-primary" data-act="start">' + esc(t('m5.layers.ui.startExploring', 'Start exploring')) + ' ' + ICON_NEXT + '</button>' +
+      '<div class="foot">' +
+        backBtn() +
+        '<div class="foot-actions">' +
+          '<button type="button" class="btn btn-primary" data-act="start">' +
+            esc(t('m5.layers.ui.startExploring', 'Start exploring')) + ' ' + ICON_NEXT +
+          '</button>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -859,9 +870,9 @@ window.UAOA_I18N = {"common":{"checkUnderstandingHeading":{"text":"Check Your Un
   function setCardMode() {
     var root = document.getElementById('root');
     if (!root) return;
-    // Intro stays compact; overview / tabs / summary keep a roomier canvas.
-    var roomy = S.screen === 'overview' || S.step === 'tab' || S.step === 'summary';
-    root.classList.toggle('is-roomy', roomy);
+    // Overview: roomy natural height. Layer: one fixed card for intro/tabs/summary.
+    root.classList.toggle('is-roomy', S.screen === 'overview');
+    root.classList.toggle('is-layer', S.screen === 'layer');
   }
 
   function render() {
