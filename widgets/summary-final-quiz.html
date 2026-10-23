@@ -185,7 +185,7 @@
 
   /* Readiness score flip modal
      - .score-modal = solid white backdrop (quiz behind fully covered)
-     - .face = scorecard panel (unchanged navy/teal brand card chrome) */
+     - .face = scorecard; .is-pass / .is-fail two-tone (match correct/incorrect feedback) */
   .score-modal {
     position: fixed; inset: 0; z-index: 40;
     display: flex; align-items: center; justify-content: center;
@@ -217,6 +217,32 @@
     padding: 32px 32px 28px;
     display: flex; flex-direction: column;
     overflow: hidden;
+  }
+  /* Pass ≥60% — correct-answer two-tone (lighter fill + darker border) */
+  .face.is-pass {
+    background: #E6F6F8;
+    border-color: #21B7CB;
+  }
+  .face.is-pass .you-scored,
+  .face.is-pass .pct-huge,
+  .face.is-pass .back-pct,
+  .face.is-pass .back-body,
+  .face.is-pass .click-complete {
+    color: #03707D;
+  }
+  .face.is-pass .back-note { color: #03707D; opacity: .85; }
+  /* Fail — incorrect-answer two-tone */
+  .face.is-fail {
+    background: #FEF3E2;
+    border-color: #D35420;
+  }
+  .face.is-fail .you-scored,
+  .face.is-fail .pct-huge,
+  .face.is-fail .back-pct,
+  .face.is-fail .back-body,
+  .face.is-fail .back-note,
+  .face.is-fail .click-complete {
+    color: #990000;
   }
   .face-front {
     align-items: center; justify-content: space-between; text-align: center;
@@ -818,6 +844,19 @@
     }
   }
 
+  function setScorecardState(didPass) {
+    flipCard.querySelectorAll('.face').forEach(function (el) {
+      el.classList.toggle('is-pass', !!didPass);
+      el.classList.toggle('is-fail', !didPass);
+    });
+  }
+
+  function clearScorecardState() {
+    flipCard.querySelectorAll('.face').forEach(function (el) {
+      el.classList.remove('is-pass', 'is-fail');
+    });
+  }
+
   function showScore() {
     closeFeedback();
     attempt += 1;
@@ -829,6 +868,7 @@
     pctFront.textContent = String(pct);
     pctBack.textContent = String(pct);
     fillScoreCopy(pct);
+    setScorecardState(outcome === 'pass');
     flipped = false;
     flipCard.classList.remove('is-flipped');
     scoreModal.classList.add('show');
@@ -847,6 +887,7 @@
     outcome = null;
     flipped = false;
     flipCard.classList.remove('is-flipped');
+    clearScorecardState();
     scoreReported = false;
     render();
     syncHeight();
