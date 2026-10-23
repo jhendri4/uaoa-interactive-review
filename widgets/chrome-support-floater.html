@@ -62,14 +62,15 @@
         window.UAOA.openSupport();
       });
       document.getElementById('unlockDict').addEventListener('click', function () {
-        try { localStorage.setItem('uaoa-mini-dict-unlocked', '1'); } catch (e) {}
+        try { sessionStorage.setItem('uaoa-mini-dict-unlocked-v2', '1'); } catch (e) {}
         if (window.UAOA.dockMiniDictionary) window.UAOA.dockMiniDictionary();
         else if (window.UAOA.syncSupportFloater) window.UAOA.syncSupportFloater();
       });
       document.getElementById('resetDict').addEventListener('click', function () {
         try {
-          localStorage.removeItem('uaoa-mini-dict-unlocked');
-          localStorage.removeItem('uaoa-mini-dict-html');
+          sessionStorage.removeItem('uaoa-mini-dict-unlocked-v2');
+          sessionStorage.removeItem('uaoa-mini-dict-unlocked');
+          sessionStorage.removeItem('uaoa-mini-dict-html');
           document.documentElement.removeAttribute('data-uaoa-dict-docked');
         } catch (e) {}
         location.reload();

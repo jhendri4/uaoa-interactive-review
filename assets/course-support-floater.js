@@ -5,21 +5,24 @@
  * (see scripts/deploy_custom_js.py).
  *
  * - Always: "Need to take a break?" pill → Support options dialog
- * - Mini Dictionary pill: visible only after the learner has viewed/opened the
- *   Mini Dictionary (docked after open+close) or completed that block (scrolled
- *   past the embed on the Module 1 dictionary slide). Not shown merely because
- *   the learner is on a later slide.
+ * - Mini Dictionary pill: visible only after the learner docks it (open+close)
+ *   or completes that block (scrolled past the embed on the Module 1 dictionary
+ *   slide). Not shown on open alone, and not merely because they are on a later
+ *   slide.
  */
 (function () {
   var HOST_ATTR = 'data-uaoa-support-floater';
   var DOCK_ATTR = 'data-uaoa-dict-docked';
   var HTML_STORE_KEY = 'uaoa-mini-dict-html';
-  var UNLOCK_KEY = 'uaoa-mini-dict-unlocked';
+  /* v2: invalidate unlocks from the prior bug that set unlocked on mere "open". */
+  var UNLOCK_KEY = 'uaoa-mini-dict-unlocked-v2';
   var DICT_SLIDE_ID = '4c2d5f1a-37dd-4f89-9410-75ee3dface2a';
+  var PRE_SURVEY_SLIDE_ID = 'f11326b4-0133-4106-b4f5-6ce8842de2bf';
   // Course slide order (ScormStack source_id). Do not infer from full document HTML.
   var SLIDE_IDS_ORDERED = [
     'ab3c7036-4eff-4989-97c6-13b819492121', // About This Course
     'a366e60b-a619-46f0-b98a-cf6b88540ae5', // Welcome
+    PRE_SURVEY_SLIDE_ID, // Pre-course survey (between Welcome and Module 1)
     DICT_SLIDE_ID, // Module 1 — Mini Dictionary lives here
     'b4fb888c-e41c-4b92-ba33-c3c6b9cfaeb4',
     '69085f32-b529-456b-bef0-6ceae5b34c1d',
@@ -50,7 +53,13 @@
   // Preserve dock across Custom JS reinstalls in the same page view
   window.UAOA.__miniDictDocked = wasDocked || !!window.UAOA.__miniDictDocked;
 
-  var ROWS = [
+  /* Baked by scripts/deploy_custom_js.py --locale (defaults = English). */
+  var F = window.UAOA_I18N_FLOATER || {};
+  function ft(key, fallback) {
+    var v = F[key];
+    return (typeof v === 'string' && v) ? v : fallback;
+  }
+  var ROWS = Array.isArray(F.rows) && F.rows.length ? F.rows : [
     ['users', 'Someone you trust', 'A friend, family member, teammate or coach.'],
     ['shield-check', "Your organisation's welfare or safeguarding lead",
       'Clubs and federations can offer support and act on abuse.'],
@@ -310,18 +319,25 @@
     host = document.createElement('div');
     host.setAttribute(HOST_ATTR, '');
     root = host.attachShadow ? host.attachShadow({ mode: 'open' }) : host;
+    var breakLabel = ft('breakPill', 'Need to take a break?');
+    var dictLabel = ft('dictPill', 'Mini Dictionary');
+    var regionAria = ft('regionAria', 'Course support');
+    var supportTitle = ft('supportTitle', 'Support options');
+    var supportIntro = ft('supportIntro', 'If anything in this course has affected you, you can pause and come back when you feel ready.');
+    var closeLabel = ft('close', 'Close');
+    var closeAria = ft('closeAria', 'Close');
     root.innerHTML = '<style>' + CSS + '</style>' +
-      '<div class="stack" id="stack" role="complementary" aria-label="Course support">' +
+      '<div class="stack" id="stack" role="complementary" aria-label="' + regionAria.replace(/"/g, '&quot;') + '">' +
       '<button type="button" class="pill pill-dict" id="dictBtn">' +
-      icon('book-open', 20) + '<span>Mini Dictionary</span></button>' +
+      icon('book-open', 20) + '<span>' + dictLabel + '</span></button>' +
       '<button type="button" class="pill" id="breakBtn">' +
-      icon('heart-handshake', 20) + '<span>Need to take a break?</span></button>' +
+      icon('heart-handshake', 20) + '<span>' + breakLabel + '</span></button>' +
       '</div>' +
       '<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="uaoaSupportTitle">' +
-      '<div class="dialog"><div class="dialog-head"><h2 class="dialog-title" id="uaoaSupportTitle">Support options</h2>' +
-      '<button type="button" class="ghost" id="closeX" aria-label="Close">' + icon('x', 20) + '</button></div>' +
-      '<div class="dialog-body"><p>If anything in this course has affected you, you can pause and come back when you feel ready.</p>' +
-      rowsHtml() + '</div><div class="dialog-foot"><button type="button" class="close" id="closeBtn">Close</button></div></div></div>';
+      '<div class="dialog"><div class="dialog-head"><h2 class="dialog-title" id="uaoaSupportTitle">' + supportTitle + '</h2>' +
+      '<button type="button" class="ghost" id="closeX" aria-label="' + closeAria.replace(/"/g, '&quot;') + '">' + icon('x', 20) + '</button></div>' +
+      '<div class="dialog-body"><p>' + supportIntro + '</p>' +
+      rowsHtml() + '</div><div class="dialog-foot"><button type="button" class="close" id="closeBtn">' + closeLabel + '</button></div></div></div>';
     document.body.appendChild(host);
     stack = root.getElementById('stack');
     breakBtn = root.getElementById('breakBtn');
@@ -427,11 +443,7 @@
     var data = ev && ev.data;
     if (!data || data.source !== 'uaoa-mini-dictionary') return;
     if (data.html) storeDictHtml(data.html);
-    // Opening the dictionary counts as "viewed" — unlock the nav pill.
-    if (data.type === 'open') {
-      setUnlocked(true);
-      syncStack();
-    }
+    // Pill unlocks only after dock (open+close) or scrolled-past — not on mere open.
     if (data.type === 'dock') dockMiniDictionary();
     if (data.type === 'register') {
       window.UAOA.openMiniDictionary = openMiniDictionary;

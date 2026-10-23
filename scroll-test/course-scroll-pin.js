@@ -20,8 +20,8 @@
 (function () {
   // Allow redeploy to replace logic on full reload; same-page hot path uses pin API.
   window.UAOA = window.UAOA || {};
-  if (window.UAOA.__scrollPinVersion === 5) return;
-  window.UAOA.__scrollPinVersion = 5;
+  if (window.UAOA.__scrollPinVersion === 7) return;
+  window.UAOA.__scrollPinVersion = 7;
   window.UAOA.__scrollPinInstalled = true;
 
   var SPACER_ATTR = 'data-uaoa-pin-spacer';
@@ -223,11 +223,9 @@
     var desired = desiredPinY(sc);
     var delta = deltaToY(target, desired);
     var spacer = ensureSpacer(target);
-    var paneH = isPageScroller(sc) ? window.innerHeight : sc.clientHeight;
-    // Room needed below the target’s top so it can sit at `desired`
-    var needBelow = Math.max(0, Math.ceil(paneH - (desired - (isPageScroller(sc) ? 0 : sc.getBoundingClientRect().top))));
-    // Also add any current shortfall (target still below pin line)
-    var grow = Math.max(0, Math.ceil(delta + 32), needBelow);
+    // Only grow by the shortfall to the pin line. A full-viewport pad left
+    // ~900px empty tails under short segments (Continue → Key takeaways).
+    var grow = Math.max(0, Math.ceil(delta + 32));
     var cur = parseFloat(spacer.style.height) || 0;
     if (grow > cur) spacer.style.height = grow + 'px';
 
@@ -345,6 +343,36 @@
     }
   }
 
+  /**
+   * Collapse leftover pin pad after the last in-slide reveal. Instant clear
+   * snaps the view down; ease the height out while re-pinning each step.
+   */
+  function softClearSpacer(target, token) {
+    if (!target || !target.isConnected) return;
+    if (hasMoreToPinPast(target)) return;
+    var spacer = ensureSpacer(target);
+    var start = parseFloat(spacer.style.height) || 0;
+    if (start < 8) {
+      clearSpacers();
+      return;
+    }
+    var steps = 8;
+    var i = 0;
+    function step() {
+      if (token !== activeToken || !target.isConnected) return;
+      i += 1;
+      var next = Math.max(0, Math.round(start * (1 - i / steps)));
+      spacer.style.height = next + 'px';
+      scrollToDesired(target, false);
+      if (next > 0) {
+        setTimeout(step, 40);
+        return;
+      }
+      if (spacer.parentNode) spacer.parentNode.removeChild(spacer);
+    }
+    step();
+  }
+
   function pin(target) {
     if (!target || !target.isConnected) return;
     var token = ++activeToken;
@@ -382,13 +410,19 @@
 
     // After pin settles: trim spacer to the exact need, without clamping
     // scrollTop (that snap-back is what killed the last Continue → Key takeaways).
-    // Never clearSpacers() here — only on page/slide leave.
     [500, 1200].forEach(function (ms) {
       setTimeout(function () {
         if (token !== activeToken || !target.isConnected) return;
         settleSpacerForPin(target);
       }, ms);
     });
+
+    // Last segment only: ease out leftover pad so learners don't see a huge
+    // empty tail under Key takeaways / closing content.
+    setTimeout(function () {
+      if (token !== activeToken || !target.isConnected) return;
+      softClearSpacer(target, token);
+    }, 1600);
   }
 
   document.addEventListener('uaoa-scroll-fade-pin', function (ev) {
