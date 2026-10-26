@@ -50,6 +50,12 @@
   }
   window.UAOA = window.UAOA || {};
   window.UAOA.__supportFloaterInstalled = true;
+  // A superseded instance must stop: its observer/interval would re-insert its
+  // own host and remove the new one, ping-ponging hundreds of times a second.
+  var GEN = window.UAOA.__supportFloaterGen = (window.UAOA.__supportFloaterGen || 0) + 1;
+  function superseded() { return GEN !== window.UAOA.__supportFloaterGen; }
+  // ScormStack's player collapses the sidebar to the hamburger below 768px.
+  var COMPACT_MAX_W = 768;
   // Preserve dock across Custom JS reinstalls in the same page view
   window.UAOA.__miniDictDocked = wasDocked || !!window.UAOA.__miniDictDocked;
 
@@ -100,6 +106,10 @@
     '.pill:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297, 0 10px 28px rgba(14,27,51,.35); }',
     '.pill-dict { display: none !important; }',
     '.pill-dict.show { display: inline-flex !important; }',
+    '.stack.compact { align-items: flex-start; }',
+    '.stack.compact .pill { width: 44px; height: 44px; padding: 0; gap: 0; justify-content: center; border-radius: 999px; }',
+    '.stack.compact .pill span { position: absolute; width: 1px; height: 1px; overflow: hidden;',
+    '  clip: rect(0 0 0 0); white-space: nowrap; }',
     '.scrim { display: none; position: fixed; inset: 0; z-index: 2147483646; align-items: center;',
     '  justify-content: center; padding: 24px; background: rgba(14,27,51,.64);',
     '  font-family: "Cerebri Sans Pro", system-ui, -apple-system, sans-serif; color: #091324; }',
@@ -312,6 +322,7 @@
   }
 
   function ensure() {
+    if (superseded()) return;
     if (host && host.isConnected) return;
     var prev = document.querySelector('[' + HOST_ATTR + ']');
     if (prev && prev.parentNode) prev.parentNode.removeChild(prev);
@@ -328,9 +339,11 @@
     var closeAria = ft('closeAria', 'Close');
     root.innerHTML = '<style>' + CSS + '</style>' +
       '<div class="stack" id="stack" role="complementary" aria-label="' + regionAria.replace(/"/g, '&quot;') + '">' +
-      '<button type="button" class="pill pill-dict" id="dictBtn">' +
+      '<button type="button" class="pill pill-dict" id="dictBtn" aria-label="' + dictLabel.replace(/"/g, '&quot;') +
+      '" title="' + dictLabel.replace(/"/g, '&quot;') + '">' +
       icon('book-open', 20) + '<span>' + dictLabel + '</span></button>' +
-      '<button type="button" class="pill" id="breakBtn">' +
+      '<button type="button" class="pill" id="breakBtn" aria-label="' + breakLabel.replace(/"/g, '&quot;') +
+      '" title="' + breakLabel.replace(/"/g, '&quot;') + '">' +
       icon('heart-handshake', 20) + '<span>' + breakLabel + '</span></button>' +
       '</div>' +
       '<div class="scrim" id="scrim" role="dialog" aria-modal="true" aria-labelledby="uaoaSupportTitle">' +
@@ -398,6 +411,7 @@
   }
 
   function syncStack() {
+    if (superseded()) { teardown(); return; }
     ensure();
     maybeUnlockFromProgress();
     var dialogOpen = scrim.classList.contains('open');
@@ -407,10 +421,20 @@
     }
 
     var state = navState();
+    var compact = window.innerWidth < COMPACT_MAX_W;
     stack.classList.add('open');
+    stack.classList.toggle('compact', compact);
     stack.style.left = state.left + 'px';
-    stack.style.width = state.width + 'px';
+    stack.style.width = compact ? 'auto' : state.width + 'px';
     dictBtn.classList.toggle('show', shouldShowDictPill());
+  }
+
+  var timer = null, obs = null;
+  function teardown() {
+    if (timer) { clearInterval(timer); timer = null; }
+    if (obs) { obs.disconnect(); obs = null; }
+    window.removeEventListener('resize', syncStack);
+    window.removeEventListener('scroll', syncStack, true);
   }
 
   function dockMiniDictionary() {
@@ -441,7 +465,7 @@
 
   window.addEventListener('message', function (ev) {
     var data = ev && ev.data;
-    if (!data || data.source !== 'uaoa-mini-dictionary') return;
+    if (superseded() || !data || data.source !== 'uaoa-mini-dictionary') return;
     if (data.html) storeDictHtml(data.html);
     // Pill unlocks only after dock (open+close) or scrolled-past — not on mere open.
     if (data.type === 'dock') dockMiniDictionary();
@@ -457,8 +481,8 @@
     syncStack();
     window.addEventListener('resize', syncStack);
     window.addEventListener('scroll', syncStack, true);
-    setInterval(syncStack, 500);
-    var obs = new MutationObserver(function () { syncStack(); });
+    timer = setInterval(syncStack, 500);
+    obs = new MutationObserver(function () { syncStack(); });
     obs.observe(document.body, { childList: true, subtree: true, attributes: true });
   }
 

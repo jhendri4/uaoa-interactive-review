@@ -44,8 +44,8 @@
 (function () {
   // Allow redeploy to replace logic on full reload; same-page hot path uses pin API.
   window.UAOA = window.UAOA || {};
-  if (window.UAOA.__scrollPinVersion === 7) return;
-  window.UAOA.__scrollPinVersion = 7;
+  if (window.UAOA.__scrollPinVersion === 8) return;
+  window.UAOA.__scrollPinVersion = 8;
   window.UAOA.__scrollPinInstalled = true;
 
   var SPACER_ATTR = 'data-uaoa-pin-spacer';
@@ -397,8 +397,18 @@
     step();
   }
 
+  /** CSS-retired blocks (e.g. Learning Activity pill) have no box to pin to. */
+  function firstRendered(target) {
+    var node = target;
+    while (node && node.getClientRects && !node.getClientRects().length) {
+      node = node.nextElementSibling;
+    }
+    return node || target;
+  }
+
   function pin(target) {
     if (!target || !target.isConnected) return;
+    target = firstRendered(target);
     var token = ++activeToken;
 
     // Always hard-pin. Soft nearest-scroll is what left blocks on the bottom edge.
@@ -442,11 +452,12 @@
     });
 
     // Last segment only: ease out leftover pad so learners don't see a huge
-    // empty tail under Key takeaways / closing content.
+    // empty tail under Key takeaways / closing content. Keep pad long enough
+    // to read + hit the orange Continue / module CTA before settle.
     setTimeout(function () {
       if (token !== activeToken || !target.isConnected) return;
       softClearSpacer(target, token);
-    }, 1600);
+    }, 40000);
   }
 
   document.addEventListener('uaoa-scroll-fade-pin', function (ev) {
