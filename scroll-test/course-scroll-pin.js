@@ -20,8 +20,8 @@
 (function () {
   // Allow redeploy to replace logic on full reload; same-page hot path uses pin API.
   window.UAOA = window.UAOA || {};
-  if (window.UAOA.__scrollPinVersion === 7) return;
-  window.UAOA.__scrollPinVersion = 7;
+  if (window.UAOA.__scrollPinVersion === 9) return;
+  window.UAOA.__scrollPinVersion = 9;
   window.UAOA.__scrollPinInstalled = true;
 
   var SPACER_ATTR = 'data-uaoa-pin-spacer';
@@ -418,11 +418,12 @@
     });
 
     // Last segment only: ease out leftover pad so learners don't see a huge
-    // empty tail under Key takeaways / closing content.
+    // empty tail under Key takeaways / closing content. Keep pad long enough
+    // to read + hit the orange Continue / module CTA before settle.
     setTimeout(function () {
       if (token !== activeToken || !target.isConnected) return;
       softClearSpacer(target, token);
-    }, 1600);
+    }, 40000);
   }
 
   document.addEventListener('uaoa-scroll-fade-pin', function (ev) {

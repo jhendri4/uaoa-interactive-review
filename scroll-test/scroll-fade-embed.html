@@ -316,7 +316,7 @@
       setTimeout(function () { prepareAndScroll(Math.abs((target.getBoundingClientRect().top - topInset())) < 140); }, 750);
       // After pin holds on the last segment, ease out leftover pad (instant
       // clear snaps the view down).
-      setTimeout(softClearSpacer, 1600);
+      setTimeout(softClearSpacer, 40000);
     }
 
     function clearPinSpacers() {
