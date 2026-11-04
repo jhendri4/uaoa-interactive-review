@@ -302,11 +302,12 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     body.innerHTML = c.html;
     renderDots();
 
+    var onLast = i === CARDS.length - 1;
     prev.disabled = i <= 0;
-    // Forward arrow mirrors Next: review earlier cards, unlock next, or complete.
-    next.disabled = finished ? i >= maxSeen : false;
+    // Arrow moves between cards. The last card is finished with Complete, not Next.
+    next.disabled = onLast || (finished && i >= maxSeen);
 
-    if (finished) {
+    if (finished && onLast) {
       action.classList.add('is-complete');
       action.setAttribute('aria-pressed', 'true');
       action.setAttribute('aria-disabled', 'true');
@@ -317,7 +318,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
       action.removeAttribute('aria-pressed');
       action.removeAttribute('aria-disabled');
       action.removeAttribute('aria-label');
-      action.textContent = t('common.next', 'Next');
+      action.textContent = (!finished && onLast) ? t('common.complete', 'Complete') : t('common.next', 'Next');
     }
     syncHeight();
   }
@@ -334,17 +335,12 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
       render();
       return;
     }
-    // At the frontier: unlock the next card, or complete on the last
+    // At the frontier: unlock the next card. The last card does not advance.
     if (i < CARDS.length - 1) {
       i += 1;
       if (i > maxSeen) maxSeen = i;
       render();
-      return;
     }
-    finished = true;
-    maxSeen = CARDS.length - 1;
-    markComplete();
-    render();
   }
   img.addEventListener('load', function () {
     if (!locking) syncHeight();
@@ -356,7 +352,17 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   });
   next.addEventListener('click', goNext);
   action.addEventListener('click', function () {
-    if (finished) return;
+    if (finished) {
+      goNext();
+      return;
+    }
+    if (i >= CARDS.length - 1) {
+      finished = true;
+      maxSeen = CARDS.length - 1;
+      markComplete();
+      render();
+      return;
+    }
     goNext();
   });
   render();
