@@ -65,20 +65,17 @@
   .action {
     font: inherit; font-weight: 700; font-size: 15px; color: #fff;
     background: #1C3564; border: 0; border-radius: 999px; padding: 12px 22px; cursor: pointer;
-    transition: background .15s, opacity .15s;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 44px;
+    transition: background .15s, color .15s, padding .15s;
   }
   .action:hover { background: #152A52; }
   .action:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297; }
-  .action.done {
-    opacity: .45; pointer-events: none; cursor: default; background: #1C3564;
+  .action.is-complete {
+    width: 44px; height: 44px; min-width: 44px; padding: 0;
+    color: #21B7CB; background: #1C3564; cursor: default;
   }
-  .action.done:hover { background: #1C3564; }
-  .done-banner {
-    margin-top: 2px; padding: 12px 14px; border-radius: 10px;
-    background: #EEF3FB; color: #1C3564; font-size: 14px; font-weight: 700;
-    opacity: 0; pointer-events: none; flex: none;
-  }
-  .done-banner.show { opacity: 1; }
+  .action.is-complete:hover { background: #1C3564; }
   @media (max-width: 720px) {
     .card { padding: 20px 16px 14px; }
     .title { font-size: 20px; line-height: 26px; }
@@ -108,7 +105,6 @@
       </div>
       <button type="button" class="action" id="action" data-i18n="common.next">Next</button>
     </div>
-    <div class="done-banner" id="done" data-i18n="common.activityComplete">Activity complete</div>
   </div>
 <!--UAOA_I18N-->
 <script>
@@ -230,7 +226,7 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
   var prev = document.getElementById('prev');
   var next = document.getElementById('next');
   var action = document.getElementById('action');
-  var done = document.getElementById('done');
+  var CHECK_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
   seriesTotal.textContent = String(CARDS.length);
 
   function frame() {
@@ -311,15 +307,17 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     next.disabled = finished ? i >= maxSeen : false;
 
     if (finished) {
-      action.textContent = t('common.completed', 'Completed');
-      action.classList.add('done');
-      action.disabled = true;
-      done.classList.add('show');
+      action.classList.add('is-complete');
+      action.setAttribute('aria-pressed', 'true');
+      action.setAttribute('aria-disabled', 'true');
+      action.setAttribute('aria-label', t('common.completed', 'Completed'));
+      if (!action.querySelector('svg')) action.innerHTML = CHECK_SVG;
     } else {
+      action.classList.remove('is-complete');
+      action.removeAttribute('aria-pressed');
+      action.removeAttribute('aria-disabled');
+      action.removeAttribute('aria-label');
       action.textContent = t('common.next', 'Next');
-      action.classList.remove('done');
-      action.disabled = false;
-      done.classList.remove('show');
     }
     syncHeight();
   }
@@ -357,7 +355,10 @@ var t = window.t || function (k, fb) { return fb != null ? fb : k; };
     render();
   });
   next.addEventListener('click', goNext);
-  action.addEventListener('click', goNext);
+  action.addEventListener('click', function () {
+    if (finished) return;
+    goNext();
+  });
   render();
   lockLayout();
   var resizeTimer = null;
