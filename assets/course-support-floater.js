@@ -66,7 +66,7 @@
     return (typeof v === 'string' && v) ? v : fallback;
   }
   var ROWS = Array.isArray(F.rows) && F.rows.length ? F.rows : [
-    ['users', 'Someone you trust', 'A friend, family member, teammate or coach.'],
+    ['users', 'Someone you trust', 'Speak to someone you trust: A friend, family member, teammate or coach.'],
     ['shield-check', "Your organisation's welfare or safeguarding lead",
       'Clubs and federations can offer support and act on abuse.'],
     ['flag', 'Platform reporting tools', 'Every major platform lets you report posts and accounts.'],
