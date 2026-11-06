@@ -475,9 +475,9 @@
     }
     if (dictBtn) dictBtn.classList.toggle('show', shouldShowDictPill());
     // The support dialog covers the rail, so the stack hides for that scrim
-    // only. The Welcome disclaimer must not: View Disclaimer stays in the
-    // bottom-left rail while that modal is open or closed. Its scrim sits
-    // under this stack (z-index 2147482500 vs 2147483000).
+    // only. The Welcome disclaimer must not hide the stack: its scrim sits
+    // under this rail (z-index 2147482500 vs 2147483000). View Disclaimer
+    // itself is gated by shouldShowPill (acked only).
     if (scrim.classList.contains('open')) {
       stack.classList.remove('open');
       return;
