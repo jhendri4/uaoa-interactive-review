@@ -5,10 +5,10 @@
  * (see scripts/deploy_custom_js.py).
  *
  * - Always: "Need to take a break?" pill → Support options dialog
- * - Mini Dictionary pill: hidden on About, Welcome, pre-survey, and at launch
- *   (unknown slide). Shown only after dock (open+close) or scroll-past-embed
- *   on the Module 1 dictionary slide, and only while on that slide or later.
- *   Not shown on open alone, and not merely because they skipped ahead.
+ * - Mini Dictionary pill: hidden on About, Welcome, pre-survey, and at launch.
+ *   Dismissing the dictionary popup unlocks it on the Module 1 dictionary
+ *   slide and every later slide. Scroll-past on that slide still unlocks it.
+ *   Opening the popup alone does not, and skipping ahead does not.
  */
 (function () {
   var HOST_ATTR = 'data-uaoa-support-floater';
@@ -206,6 +206,24 @@
     return found;
   }
 
+  function normLabel(s) {
+    return String(s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  function slideIdFromLabel(name) {
+    var n = normLabel(name);
+    if (!n) return null;
+    var pack = window.UAOA_DISCLAIMER;
+    var slides = pack && Array.isArray(pack.slides) ? pack.slides : null;
+    if (!slides) return null;
+    for (var i = 0; i < slides.length; i++) {
+      var title = normLabel(slides[i] && slides[i].title);
+      var id = slides[i] && slides[i].id;
+      if (title && id && title === n) return id;
+    }
+    return null;
+  }
+
   function navSlideId() {
     var buttons = document.querySelectorAll('[data-slot="course-player-navigation-slide-button"]');
     if (!buttons.length) return null;
@@ -223,6 +241,9 @@
         var href = (link && link.getAttribute('href')) || '';
         var hrefIds = idsInBlob(href);
         if (hrefIds.length === 1) return hrefIds[0];
+        var nameEl = scope.querySelector ? scope.querySelector('[data-slot="course-player-navigation-slide-name"]') : null;
+        var byName = slideIdFromLabel(nameEl ? nameEl.textContent : '');
+        if (byName) return byName;
         break;
       }
     }
@@ -306,12 +327,44 @@
     return isDocked() || isUnlocked();
   }
 
+  function embedOnScreen() {
+    var el = findDictEmbed();
+    if (!el) return false;
+    var r = el.getBoundingClientRect();
+    return r.width >= 8 && r.height >= 8;
+  }
+
+  function titleLooksBeforeDict() {
+    var pack = window.UAOA_DISCLAIMER;
+    if (!pack || !Array.isArray(pack.slides)) return false;
+    var title = '';
+    try { title = normLabel(document.title); } catch (e) { return false; }
+    if (!title) return false;
+    var limit = Math.min(DICT_SLIDE_INDEX, pack.slides.length);
+    for (var i = 0; i < limit; i++) {
+      var name = normLabel(pack.slides[i] && pack.slides[i].title);
+      if (!name) continue;
+      if (title === name || title.indexOf(name + ' ') === 0 || title.indexOf(name + '-') === 0 ||
+          title.indexOf(name + '|') === 0 || title.indexOf(name + '·') === 0) return true;
+    }
+    return false;
+  }
+
   function shouldShowDictPill() {
+    // Hidden until the learner dismisses the popup or scrolls past the embed.
+    if (!(isDocked() || isUnlocked())) return false;
     var idx = slideIndexForId(currentSlideId());
-    // About, Welcome, pre-survey, and unknown (course launch): never.
-    if (idx < DICT_SLIDE_INDEX) return false;
-    // On the Module 1 dictionary slide or later: dock-on-close or scroll-past.
-    return isDocked() || isUnlocked();
+    // About, Welcome, pre-survey — and a title that is clearly one of those.
+    if (idx >= 0 && idx < DICT_SLIDE_INDEX) return false;
+    if (idx < 0 && titleLooksBeforeDict()) return false;
+    // Dictionary slide (resolved id, or the embed itself is on screen) and later.
+    if (idx >= DICT_SLIDE_INDEX || embedOnScreen()) {
+      window.UAOA.__miniDictPast = true;
+      return true;
+    }
+    // Later slides sometimes drop the embed before the URL/nav resolves.
+    // Remember that dismiss already happened on the dictionary slide.
+    return !!window.UAOA.__miniDictPast;
   }
 
   function maybeUnlockFromProgress() {
@@ -343,6 +396,8 @@
       document.removeEventListener('keydown', onKey);
       if (dictHost.parentNode) dictHost.parentNode.removeChild(dictHost);
       dictMounted = null;
+      // Dismiss from the nav pill is the same unlock as dismiss from the slide.
+      dockMiniDictionary();
     }
     function onKey(e) { if (e.key === 'Escape') closeDict(); }
 
@@ -529,8 +584,8 @@
     var data = ev && ev.data;
     if (superseded() || !data || data.source !== 'uaoa-mini-dictionary') return;
     if (data.html) storeDictHtml(data.html);
-    // Pill unlocks only after dock (open+close) or scrolled-past — not on mere open.
-    if (data.type === 'dock') dockMiniDictionary();
+    // Pill unlocks on dismiss (dock/dismiss) or scrolled-past — not on mere open.
+    if (data.type === 'dock' || data.type === 'dismiss') dockMiniDictionary();
     if (data.type === 'register') {
       window.UAOA.openMiniDictionary = openMiniDictionary;
       syncStack();
