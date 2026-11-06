@@ -106,6 +106,15 @@
     '.pill:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7C5297, 0 10px 28px rgba(14,27,51,.35); }',
     '.pill-dict { display: none !important; }',
     '.pill-dict.show { display: inline-flex !important; }',
+    '.pill-disclaimer { display: none !important; }',
+    '.pill-disclaimer.show { display: inline-flex !important; }',
+    '.pill.pill-disclaimer { color: #1C3564; background: #C4CDDB; border: 1.5px solid #1C3564;',
+    '  border-radius: 14px; font-weight: 700; font-size: 16px; line-height: 22px;',
+    '  box-shadow: none; padding: 12px 18px; }',
+    '.pill.pill-disclaimer svg { color: #1C3564; }',
+    '.pill.pill-disclaimer:hover { background: #D5DCE6; }',
+    '.pill.pill-disclaimer:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1C3564; }',
+    '.stack.compact .pill.pill-disclaimer { width: 44px; height: 44px; padding: 0; border-radius: 999px; }',
     '.stack.compact { align-items: flex-start; }',
     '.stack.compact .pill { width: 44px; height: 44px; padding: 0; gap: 0; justify-content: center; border-radius: 999px; }',
     '.stack.compact .pill span { position: absolute; width: 1px; height: 1px; overflow: hidden;',
@@ -337,11 +346,14 @@
     var supportIntro = ft('supportIntro', 'If anything in this course has affected you, you can pause and come back when you feel ready.');
     var closeLabel = ft('close', 'Close');
     var closeAria = ft('closeAria', 'Close');
+    var disclaimerHtml = (window.UAOA && typeof window.UAOA.disclaimerPillHtml === 'function')
+      ? window.UAOA.disclaimerPillHtml() : '';
     root.innerHTML = '<style>' + CSS + '</style>' +
       '<div class="stack" id="stack" role="complementary" aria-label="' + regionAria.replace(/"/g, '&quot;') + '">' +
       '<button type="button" class="pill pill-dict" id="dictBtn" aria-label="' + dictLabel.replace(/"/g, '&quot;') +
       '" title="' + dictLabel.replace(/"/g, '&quot;') + '">' +
       icon('book-open', 20) + '<span>' + dictLabel + '</span></button>' +
+      disclaimerHtml +
       '<button type="button" class="pill" id="breakBtn" aria-label="' + breakLabel.replace(/"/g, '&quot;') +
       '" title="' + breakLabel.replace(/"/g, '&quot;') + '">' +
       icon('heart-handshake', 20) + '<span>' + breakLabel + '</span></button>' +
@@ -358,6 +370,9 @@
     scrim = root.getElementById('scrim');
     breakBtn.addEventListener('click', openSupport);
     dictBtn.addEventListener('click', openMiniDictionary);
+    if (window.UAOA && typeof window.UAOA.bindDisclaimer === 'function') {
+      window.UAOA.bindDisclaimer(root);
+    }
     root.getElementById('closeX').addEventListener('click', closeSupport);
     root.getElementById('closeBtn').addEventListener('click', closeSupport);
     scrim.addEventListener('click', function (e) { if (e.target === scrim) closeSupport(); });
@@ -414,7 +429,11 @@
     if (superseded()) { teardown(); return; }
     ensure();
     maybeUnlockFromProgress();
-    var dialogOpen = scrim.classList.contains('open');
+    if (window.UAOA && typeof window.UAOA.syncDisclaimer === 'function') {
+      window.UAOA.syncDisclaimer();
+    }
+    var disclaimerOpen = !!(window.UAOA && window.UAOA.disclaimerIsOpen && window.UAOA.disclaimerIsOpen());
+    var dialogOpen = scrim.classList.contains('open') || disclaimerOpen;
     if (dialogOpen) {
       stack.classList.remove('open');
       return;
