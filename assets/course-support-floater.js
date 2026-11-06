@@ -5,33 +5,40 @@
  * (see scripts/deploy_custom_js.py).
  *
  * - Always: "Need to take a break?" pill → Support options dialog
- * - Mini Dictionary pill: visible only after the learner docks it (open+close)
- *   or completes that block (scrolled past the embed on the Module 1 dictionary
- *   slide). Not shown on open alone, and not merely because they are on a later
- *   slide.
+ * - Mini Dictionary pill: hidden on About, Welcome, pre-survey, and at launch
+ *   (unknown slide). Shown only after dock (open+close) or scroll-past-embed
+ *   on the Module 1 dictionary slide, and only while on that slide or later.
+ *   Not shown on open alone, and not merely because they skipped ahead.
  */
 (function () {
   var HOST_ATTR = 'data-uaoa-support-floater';
   var DOCK_ATTR = 'data-uaoa-dict-docked';
   var HTML_STORE_KEY = 'uaoa-mini-dict-html';
-  /* v2: invalidate unlocks from the prior bug that set unlocked on mere "open". */
-  var UNLOCK_KEY = 'uaoa-mini-dict-unlocked-v2';
-  var DICT_SLIDE_ID = '4c2d5f1a-37dd-4f89-9410-75ee3dface2a';
-  var PRE_SURVEY_SLIDE_ID = 'f11326b4-0133-4106-b4f5-6ce8842de2bf';
+  /* v3: drop leftover v2 unlocks that could fire on About via a false slide match. */
+  var UNLOCK_KEY = 'uaoa-mini-dict-unlocked-v3';
+  /* Baked by scripts/deploy_custom_js.py --locale (defaults = English). */
+  var F = window.UAOA_I18N_FLOATER || {};
+  var DICT_SLIDE_ID = (typeof F.dictSlideId === 'string' && F.dictSlideId)
+    ? F.dictSlideId
+    : '4c2d5f1a-37dd-4f89-9410-75ee3dface2a';
   // Course slide order (ScormStack source_id). Do not infer from full document HTML.
-  var SLIDE_IDS_ORDERED = [
-    'ab3c7036-4eff-4989-97c6-13b819492121', // About This Course
-    'a366e60b-a619-46f0-b98a-cf6b88540ae5', // Welcome
-    PRE_SURVEY_SLIDE_ID, // Pre-course survey (between Welcome and Module 1)
-    DICT_SLIDE_ID, // Module 1 — Mini Dictionary lives here
-    'b4fb888c-e41c-4b92-ba33-c3c6b9cfaeb4',
-    '69085f32-b529-456b-bef0-6ceae5b34c1d',
-    '63c299a3-9125-4dae-9126-8417d7c6dd50',
-    'e0eab6ca-b4df-4308-a725-19a2c232272b',
-    'd4f62e1d-6153-42a0-893d-a2433efb98fe',
-    'bab16c8a-29e9-4d4a-820c-8b6877179f25'
-  ];
+  var SLIDE_IDS_ORDERED = Array.isArray(F.slideIds) && F.slideIds.length
+    ? F.slideIds.slice()
+    : [
+      'ab3c7036-4eff-4989-97c6-13b819492121', // About This Course
+      'a366e60b-a619-46f0-b98a-cf6b88540ae5', // Welcome
+      'f11326b4-0133-4106-b4f5-6ce8842de2bf', // Pre-course survey
+      DICT_SLIDE_ID, // Module 1 — Mini Dictionary lives here
+      'b4fb888c-e41c-4b92-ba33-c3c6b9cfaeb4',
+      '69085f32-b529-456b-bef0-6ceae5b34c1d',
+      '63c299a3-9125-4dae-9126-8417d7c6dd50',
+      'e0eab6ca-b4df-4308-a725-19a2c232272b',
+      'd4f62e1d-6153-42a0-893d-a2433efb98fe',
+      'ff1b2975-4e6e-44d3-85d6-74c61a9cbb51',
+      'bdeace05-2d09-4056-8283-face7b8365e0'
+    ];
   var DICT_SLIDE_INDEX = SLIDE_IDS_ORDERED.indexOf(DICT_SLIDE_ID);
+  if (DICT_SLIDE_INDEX < 0) DICT_SLIDE_INDEX = 3;
   var M1_SLIDE_ID = DICT_SLIDE_ID;
   var SLIDE_ORDER = SLIDE_IDS_ORDERED.map(function (id, i) {
     return {
@@ -59,8 +66,6 @@
   // Preserve dock across Custom JS reinstalls in the same page view
   window.UAOA.__miniDictDocked = wasDocked || !!window.UAOA.__miniDictDocked;
 
-  /* Baked by scripts/deploy_custom_js.py --locale (defaults = English). */
-  var F = window.UAOA_I18N_FLOATER || {};
   function ft(key, fallback) {
     var v = F[key];
     return (typeof v === 'string' && v) ? v : fallback;
@@ -109,9 +114,10 @@
     '.pill-disclaimer { display: none !important; }',
     '.pill-disclaimer.show { display: inline-flex !important; }',
     '.pill.pill-disclaimer { color: #1C3564; background: #C4CDDB; border: 1.5px solid #1C3564;',
-    '  border-radius: 14px; font-weight: 700; font-size: 16px; line-height: 22px;',
-    '  box-shadow: none; padding: 12px 18px; }',
-    '.pill.pill-disclaimer svg { color: #1C3564; }',
+    '  border-radius: 12px; box-shadow: 0 10px 28px rgba(14,27,51,.35);',
+    '  font-family: inherit; font-weight: 800; font-size: 14px; line-height: 20px; letter-spacing: normal;',
+    '  padding: 12px 16px; gap: 10px; align-items: center; }',
+    '.pill.pill-disclaimer svg { color: #1C3564; flex: none; width: 20px; height: 20px; }',
     '.pill.pill-disclaimer:hover { background: #D5DCE6; }',
     '.pill.pill-disclaimer:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1C3564; }',
     '.stack.compact .pill.pill-disclaimer { width: 44px; height: 44px; padding: 0; border-radius: 999px; }',
@@ -192,28 +198,57 @@
     return -1;
   }
 
-  function currentSlideId() {
-    var loc = locationBlob();
-    var bestIdx = -1;
-    var bestId = null;
+  function idsInBlob(blob) {
+    var found = [];
     for (var i = 0; i < SLIDE_IDS_ORDERED.length; i++) {
-      if (loc.indexOf(SLIDE_IDS_ORDERED[i]) !== -1 && i > bestIdx) {
-        bestIdx = i;
-        bestId = SLIDE_IDS_ORDERED[i];
+      if (blob.indexOf(SLIDE_IDS_ORDERED[i]) !== -1) found.push(SLIDE_IDS_ORDERED[i]);
+    }
+    return found;
+  }
+
+  function navSlideId() {
+    var buttons = document.querySelectorAll('[data-slot="course-player-navigation-slide-button"]');
+    if (!buttons.length) return null;
+    var active = -1;
+    for (var i = 0; i < buttons.length; i++) {
+      var b = buttons[i];
+      var cls = String(b.className || '');
+      var row = b.closest ? b.closest('[data-slot="course-player-navigation-slide"]') : null;
+      var rowCls = row ? String(row.className || '') : '';
+      var current = b.getAttribute('aria-current') || (row && row.getAttribute('aria-current'));
+      if (current || cls.indexOf('nav-slide-active-bg') !== -1 || rowCls.indexOf('nav-slide-active-bg') !== -1) {
+        active = i;
+        var scope = row || b;
+        var link = (scope.closest && scope.closest('a[href]')) || (b.closest && b.closest('a[href]')) || null;
+        var href = (link && link.getAttribute('href')) || '';
+        var hrefIds = idsInBlob(href);
+        if (hrefIds.length === 1) return hrefIds[0];
+        break;
       }
     }
-    if (bestId) return bestId;
+    if (active >= 0 && buttons.length === SLIDE_IDS_ORDERED.length) {
+      return SLIDE_IDS_ORDERED[active];
+    }
+    return null;
+  }
+
+  function currentSlideId() {
+    var locIds = idsInBlob(locationBlob());
+    // A URL that names several slides is not a current-slide signal.
+    if (locIds.length === 1) return locIds[0];
+
+    var fromNav = navSlideId();
+    if (fromNav) return fromNav;
+    if (locIds.length > 1) return null;
 
     var act = document.querySelector(
-      '[aria-current="page"], [aria-current="true"], [aria-current="location"], nav [aria-selected="true"], aside [aria-selected="true"]'
+      '[aria-current="page"], [aria-current="true"], [aria-current="location"]'
     );
     if (!act) return null;
     var link = act.closest ? act.closest('a[href]') : null;
     var href = (link && link.getAttribute('href')) || '';
-    for (var j = 0; j < SLIDE_IDS_ORDERED.length; j++) {
-      if (href.indexOf(SLIDE_IDS_ORDERED[j]) !== -1) return SLIDE_IDS_ORDERED[j];
-    }
-    return null;
+    var hrefIds = idsInBlob(href);
+    return hrefIds.length === 1 ? hrefIds[0] : null;
   }
 
   function slideFromUrl() {
@@ -261,6 +296,8 @@
     var el = findDictEmbed();
     if (!el) return null;
     var r = el.getBoundingClientRect();
+    // Preloaded / off-slide iframes report a 0×0 rect; that is not "scrolled past".
+    if (r.width < 8 || r.height < 8) return null;
     // Treat as "after the dictionary page" once the embed has left the viewport.
     return r.bottom < 64;
   }
@@ -270,6 +307,10 @@
   }
 
   function shouldShowDictPill() {
+    var idx = slideIndexForId(currentSlideId());
+    // About, Welcome, pre-survey, and unknown (course launch): never.
+    if (idx < DICT_SLIDE_INDEX) return false;
+    // On the Module 1 dictionary slide or later: dock-on-close or scroll-past.
     return isDocked() || isUnlocked();
   }
 
@@ -432,9 +473,12 @@
     if (window.UAOA && typeof window.UAOA.syncDisclaimer === 'function') {
       window.UAOA.syncDisclaimer();
     }
-    var disclaimerOpen = !!(window.UAOA && window.UAOA.disclaimerIsOpen && window.UAOA.disclaimerIsOpen());
-    var dialogOpen = scrim.classList.contains('open') || disclaimerOpen;
-    if (dialogOpen) {
+    if (dictBtn) dictBtn.classList.toggle('show', shouldShowDictPill());
+    // The support dialog covers the rail, so the stack hides for that scrim
+    // only. The Welcome disclaimer must not: View Disclaimer stays in the
+    // bottom-left rail while that modal is open or closed. Its scrim sits
+    // under this stack (z-index 2147482500 vs 2147483000).
+    if (scrim.classList.contains('open')) {
       stack.classList.remove('open');
       return;
     }
@@ -445,7 +489,6 @@
     stack.classList.toggle('compact', compact);
     stack.style.left = state.left + 'px';
     stack.style.width = compact ? 'auto' : state.width + 'px';
-    dictBtn.classList.toggle('show', shouldShowDictPill());
   }
 
   var timer = null, obs = null;

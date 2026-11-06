@@ -59,33 +59,45 @@
 <body>
   <div class="wrap">
     <section class="section" aria-labelledby="risks-heading">
-      <h3 id="risks-heading">Potential risks</h3>
+      <h3 id="risks-heading" data-i18n="m3.risksBenefits.risksHeading">Potential Risks</h3>
       <ul class="cards risk">
-        <li class="card">
-          <strong>Creating and amplifying harm:</strong>
-          Generative AI can produce or manipulate text, images, audio, and video quickly and at scale.
+        <li class="card" data-i18n-html="m3.risksBenefits.risks.r1">
+          <strong>Creating manipulated content:</strong>
+          Generative AI can produce convincing fake images, audio, and videos, including deepfakes that falsely portray athletes saying or doing things that never happened.
+        </li>
+        <li class="card" data-i18n-html="m3.risksBenefits.risks.r2">
+          <strong>Amplifying harassment:</strong>
+          AI-powered tools can generate and distribute abusive messages rapidly and at scale, increasing the reach and impact of online harassment.
+        </li>
+        <li class="card" data-i18n-html="m3.risksBenefits.risks.r3">
+          <strong>Spreading disinformation and impersonation:</strong>
+          AI can be used to create misleading content or impersonate individuals, potentially damaging reputations and deceiving audiences.
         </li>
       </ul>
     </section>
 
     <section class="section" aria-labelledby="benefits-heading">
-      <h3 id="benefits-heading">Potential benefits</h3>
+      <h3 id="benefits-heading" data-i18n="m3.risksBenefits.benefitsHeading">Potential Benefits</h3>
       <ul class="cards benefit">
-        <li class="card">
+        <li class="card" data-i18n-html="m3.risksBenefits.benefits.b1">
           <strong>Detecting harmful content:</strong>
-          AI can help identify potentially harmful content and patterns across large volumes of online activity.
+          AI can help identify potentially abusive messages and detect patterns of harmful behaviour across large volumes of online activity.
         </li>
-        <li class="card">
+        <li class="card" data-i18n-html="m3.risksBenefits.benefits.b2">
           <strong>Supporting moderation:</strong>
-          Automated systems can flag content for review and help moderators prioritise potential risks.
+          Automated systems can flag and prioritise potentially harmful content for human review, helping moderators assess incidents and take appropriate action.
         </li>
-        <li class="card">
+        <li class="card" data-i18n-html="m3.risksBenefits.benefits.b3">
           <strong>Supporting users:</strong>
-          AI-enabled tools can help filter unwanted content and connect people with reporting and safety features.
+          AI-enabled tools can help individuals filter unwanted content, manage their online experience, and access reporting and safety features.
         </li>
       </ul>
     </section>
   </div>
+<!--UAOA_I18N-->
+<script>
+applyDataI18n(document);
+</script>
 <script>
 (function () {
   function syncHeight() {
