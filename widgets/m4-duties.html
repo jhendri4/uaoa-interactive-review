@@ -62,11 +62,18 @@
     line-height: 1.2;
     font-weight: 700;
     color: var(--purple);
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
+    text-decoration: none;
   }
-  .duty-all .verb { color: var(--teal); }
+  .verb::after {
+    content: "";
+    display: block;
+    width: 3ch;
+    height: 3px;
+    margin-top: 3px;
+    background: currentColor;
+    border-radius: 1px;
+  }
+  .duty-all .verb { color: var(--navy); }
   .rest {
     margin: 5px 0 0;
     font-size: 15px;
